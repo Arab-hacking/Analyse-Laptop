@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arena.ai/schemas/laptopinspector/report.schema.json",
+  "title": "LaptopInspector Report",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "summary", "collectors", "findings", "data"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["generator", "generatorVersion", "createdAt", "durationMs", "isAdministrator", "language", "requestedFormats", "anonymized"],
+      "properties": {
+        "generator": { "type": "string", "const": "LaptopInspector" },
+        "generatorVersion": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "isAdministrator": { "type": "boolean" },
+        "language": { "type": "string", "enum": ["ru", "en"] },
+        "computerName": { "type": ["string", "null"] },
+        "operatingSystem": { "type": ["string", "null"] },
+        "requestedFormats": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["html", "json", "txt", "md", "csv", "pdf", "docx"] },
+          "uniqueItems": true
+        },
+        "anonymized": { "type": "boolean" },
+        "reportHashSha256": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" }
+      },
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "required": ["hardwareHealthScore", "securityScore", "stabilityScore", "overallScore", "verdict"],
+      "properties": {
+        "hardwareHealthScore": { "$ref": "#/$defs/score" },
+        "securityScore": { "$ref": "#/$defs/score" },
+        "stabilityScore": { "$ref": "#/$defs/score" },
+        "overallScore": { "$ref": "#/$defs/score" },
+        "verdict": {
+          "type": "string",
+          "enum": ["Отличное", "Хорошее", "Удовлетворительное", "Требует внимания", "Критическое"]
+        },
+        "penaltiesByCategory": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "additionalProperties": true
+    },
+    "collectors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/collectorResult" }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "data": {
+      "type": "object",
+      "description": "Top-level keys are collector IDs, for example native.storage, security.overview, health.rules.",
+      "additionalProperties": true,
+      "properties": {
+        "health.rules": {
+          "type": "object",
+          "properties": {
+            "ruleLoadErrors": { "type": "array", "items": { "type": "string" } },
+            "penaltiesByBucket": {
+              "type": "object",
+              "properties": {
+                "hardware": { "type": "integer", "minimum": 0 },
+                "security": { "type": "integer", "minimum": 0 },
+                "stability": { "type": "integer", "minimum": 0 }
+              },
+              "additionalProperties": { "type": "integer", "minimum": 0 }
+            },
+            "formula": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical", "Info", "Low", "Medium", "High", "Critical"] },
+    "collectorStatus": { "type": "string", "enum": ["success", "partial", "skipped", "failed", "timedOut", "Success", "Partial", "Skipped", "Failed", "TimedOut"] },
+    "finding": {
+      "type": "object",
+      "required": ["ruleId", "severity", "category", "title", "details", "recommendation", "evidence"],
+      "properties": {
+        "ruleId": { "type": "string", "minLength": 1 },
+        "severity": { "$ref": "#/$defs/severity" },
+        "category": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "details": { "type": "string" },
+        "recommendation": { "type": "string" },
+        "evidence": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "collectorResult": {
+      "type": "object",
+      "required": ["id", "status", "duration", "data", "findings", "errors"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/collectorStatus" },
+        "duration": { "type": "string" },
+        "data": true,
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "errors": { "type": "array", "items": { "type": "string" } },
+        "skipReason": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,383 @@
+{
+  "schemaVersion": "1.0.0",
+  "metadata": {
+    "generator": "LaptopInspector",
+    "generatorVersion": "0.8.0-stage8-sample",
+    "createdAt": "2026-11-25T12:00:00+00:00",
+    "durationMs": 3957,
+    "isAdministrator": true,
+    "language": "ru",
+    "computerName": "SAMPLE-LAPTOP",
+    "operatingSystem": "Microsoft Windows 11 Pro 24H2",
+    "requestedFormats": [
+      "html",
+      "json",
+      "txt",
+      "md",
+      "csv"
+    ],
+    "anonymized": true,
+    "reportHashSha256": "8fecb5515235cad054dd92927f33624220e3ce3184ea805feb25938837e1ba4a"
+  },
+  "summary": {
+    "hardwareHealthScore": 93,
+    "securityScore": 100,
+    "stabilityScore": 100,
+    "overallScore": 97,
+    "verdict": "Отличное",
+    "penaltiesByCategory": {
+      "hardware": 7,
+      "security": 0,
+      "stability": 0
+    }
+  },
+  "collectors": [
+    {
+      "id": "runtime.environment",
+      "status": "success",
+      "duration": "00:00:00.0000042",
+      "data": {
+        "computerName": "SAMPLE-LAPTOP",
+        "osDescription": "Microsoft Windows 11 Pro 24H2",
+        "processorCount": 16
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    },
+    {
+      "id": "native.storage",
+      "status": "success",
+      "duration": "00:00:00.0000121",
+      "data": {
+        "physicalDrives": [
+          {
+            "index": 0,
+            "deviceDescriptor": {
+              "productId": "Sample NVMe 1TB",
+              "busType": "NVMe"
+            },
+            "nvmeHealth": {
+              "criticalWarning": 0,
+              "percentageUsed": 12,
+              "temperatureCelsius": 42,
+              "mediaAndDataIntegrityErrors": {
+                "raw": "0"
+              },
+              "dataUnitsWritten": {
+                "raw": "12345678",
+                "estimatedTerabytesDecimal": 6.321
+              }
+            }
+          }
+        ]
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    },
+    {
+      "id": "native.battery",
+      "status": "success",
+      "duration": "00:00:00.0000085",
+      "data": {
+        "batteries": [
+          {
+            "manufacturer": "Sample Battery Co",
+            "deviceName": "BAT0",
+            "information": {
+              "designedCapacityMWh": 57000,
+              "fullChargedCapacityMWh": 45200,
+              "wearPercent": 20.7,
+              "cycleCount": 412
+            },
+            "statusInfo": {
+              "capacityMWh": 32100,
+              "voltageMillivolts": 11850,
+              "charging": false,
+              "discharging": true,
+              "acOnline": false
+            }
+          }
+        ]
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    },
+    {
+      "id": "native.display",
+      "status": "success",
+      "duration": "00:00:00.0000064",
+      "data": {
+        "dxgiAdapters": [
+          {
+            "description": "Sample Integrated GPU",
+            "dedicatedVideoMemoryBytes": 134217728,
+            "sharedSystemMemoryBytes": 8589934592,
+            "outputs": [
+              {
+                "deviceName": "\\\\.\\DISPLAY1",
+                "attachedToDesktop": true
+              }
+            ]
+          }
+        ],
+        "displayConfig": {
+          "pathCount": 1
+        }
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    },
+    {
+      "id": "security.overview",
+      "status": "success",
+      "duration": "00:00:00.0000210",
+      "data": {
+        "defender": {
+          "RealTimeProtectionEnabled": true,
+          "DefenderSignaturesOutOfDate": false
+        },
+        "bitLockerVolumes": [
+          {
+            "MountPoint": "C:",
+            "ProtectionStatus": "On"
+          }
+        ],
+        "uac": {
+          "EnableLUA": 1
+        },
+        "rdp": {
+          "terminalServer": {
+            "fDenyTSConnections": 1
+          }
+        },
+        "smb1": {
+          "State": "Disabled"
+        }
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    },
+    {
+      "id": "stability.events",
+      "status": "success",
+      "duration": "00:00:00.0000333",
+      "data": {
+        "bugChecks": [],
+        "wheaLogger": [],
+        "kernelPower41": [],
+        "diskAndFileSystemErrors": [],
+        "displayTdr4101": [],
+        "applicationCrashGroups": []
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    },
+    {
+      "id": "benchmark.synthetic",
+      "status": "success",
+      "duration": "00:00:00.0003100",
+      "data": {
+        "cpuSingleThread": {
+          "score": 48.2
+        },
+        "cpuMultiThread": {
+          "score": 421.5
+        },
+        "memory": {
+          "copyGibPerSecond": 18.4,
+          "pointerChaseNanosecondsPerStep": 6.2
+        },
+        "disk": {
+          "status": "skipped",
+          "reason": "not confirmed"
+        }
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    },
+    {
+      "id": "scan.coverage",
+      "status": "success",
+      "duration": "00:00:00.0000002",
+      "data": {
+        "sections": [
+          {
+            "section": "4.1",
+            "title": "Идентификация системы"
+          },
+          {
+            "section": "4.17",
+            "title": "Журналы событий и стабильность"
+          }
+        ]
+      },
+      "findings": [],
+      "errors": [],
+      "skipReason": null
+    }
+  ],
+  "findings": [
+    {
+      "ruleId": "BAT-001",
+      "severity": "Medium",
+      "category": "Battery",
+      "title": "Износ аккумулятора выше 20%",
+      "details": "Оценочный износ аккумулятора: 20.7%.",
+      "recommendation": "Проверьте автономность; при заметной деградации планируйте замену батареи.",
+      "evidence": "$.native.battery.batteries[0].information.wearPercent"
+    },
+    {
+      "ruleId": "COV-001",
+      "severity": "Info",
+      "category": "Coverage",
+      "title": "Отчёт содержит карту покрытия",
+      "details": "scan.coverage перечисляет покрытие разделов 4.1–4.19.",
+      "recommendation": "Используйте карту покрытия, чтобы понять доступность источников.",
+      "evidence": "$.scan.coverage.sections"
+    }
+  ],
+  "data": {
+    "runtime.environment": {
+      "computerName": "SAMPLE-LAPTOP",
+      "osDescription": "Microsoft Windows 11 Pro 24H2",
+      "processorCount": 16
+    },
+    "native.storage": {
+      "physicalDrives": [
+        {
+          "index": 0,
+          "deviceDescriptor": {
+            "productId": "Sample NVMe 1TB",
+            "busType": "NVMe"
+          },
+          "nvmeHealth": {
+            "criticalWarning": 0,
+            "percentageUsed": 12,
+            "temperatureCelsius": 42,
+            "mediaAndDataIntegrityErrors": {
+              "raw": "0"
+            },
+            "dataUnitsWritten": {
+              "raw": "12345678",
+              "estimatedTerabytesDecimal": 6.321
+            }
+          }
+        }
+      ]
+    },
+    "native.battery": {
+      "batteries": [
+        {
+          "manufacturer": "Sample Battery Co",
+          "deviceName": "BAT0",
+          "information": {
+            "designedCapacityMWh": 57000,
+            "fullChargedCapacityMWh": 45200,
+            "wearPercent": 20.7,
+            "cycleCount": 412
+          },
+          "statusInfo": {
+            "capacityMWh": 32100,
+            "voltageMillivolts": 11850,
+            "charging": false,
+            "discharging": true,
+            "acOnline": false
+          }
+        }
+      ]
+    },
+    "native.display": {
+      "dxgiAdapters": [
+        {
+          "description": "Sample Integrated GPU",
+          "dedicatedVideoMemoryBytes": 134217728,
+          "sharedSystemMemoryBytes": 8589934592,
+          "outputs": [
+            {
+              "deviceName": "\\\\.\\DISPLAY1",
+              "attachedToDesktop": true
+            }
+          ]
+        }
+      ],
+      "displayConfig": {
+        "pathCount": 1
+      }
+    },
+    "security.overview": {
+      "defender": {
+        "RealTimeProtectionEnabled": true,
+        "DefenderSignaturesOutOfDate": false
+      },
+      "bitLockerVolumes": [
+        {
+          "MountPoint": "C:",
+          "ProtectionStatus": "On"
+        }
+      ],
+      "uac": {
+        "EnableLUA": 1
+      },
+      "rdp": {
+        "terminalServer": {
+          "fDenyTSConnections": 1
+        }
+      },
+      "smb1": {
+        "State": "Disabled"
+      }
+    },
+    "stability.events": {
+      "bugChecks": [],
+      "wheaLogger": [],
+      "kernelPower41": [],
+      "diskAndFileSystemErrors": [],
+      "displayTdr4101": [],
+      "applicationCrashGroups": []
+    },
+    "benchmark.synthetic": {
+      "cpuSingleThread": {
+        "score": 48.2
+      },
+      "cpuMultiThread": {
+        "score": 421.5
+      },
+      "memory": {
+        "copyGibPerSecond": 18.4,
+        "pointerChaseNanosecondsPerStep": 6.2
+      },
+      "disk": {
+        "status": "skipped",
+        "reason": "not confirmed"
+      }
+    },
+    "scan.coverage": {
+      "sections": [
+        {
+          "section": "4.1",
+          "title": "Идентификация системы"
+        },
+        {
+          "section": "4.17",
+          "title": "Журналы событий и стабильность"
+        }
+      ]
+    },
+    "health.rules": {
+      "ruleLoadErrors": [],
+      "penaltiesByBucket": {
+        "hardware": 7,
+        "security": 0,
+        "stability": 0
+      },
+      "formula": "overall = hardware*0.45 + security*0.35 + stability*0.20; bucket score = 100 - capped penalties"
+    }
+  }
+}

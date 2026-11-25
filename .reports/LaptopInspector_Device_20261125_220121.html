@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="LaptopInspector">
+<title>LaptopInspector — отчёт</title>
+<style>
+:root{color-scheme:light;--bg:#f6f8fb;--panel:#fff;--text:#172033;--muted:#687385;--brand:#2563eb;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;--border:#dbe3ef;--shadow:0 14px 34px rgba(15,23,42,.08);--code:#f1f5f9}
+:root.dark{color-scheme:dark;--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--brand:#60a5fa;--ok:#22c55e;--warn:#fbbf24;--bad:#f87171;--border:#263244;--shadow:none;--code:#0b1220}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}.nav{position:fixed;inset:0 auto 0 0;width:250px;padding:22px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:10px;overflow:auto}.brand{margin-bottom:10px}.brand strong{font-size:21px;display:block}.brand span,.mini{color:var(--muted);font-size:12px}.mini{border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:8px}.mini b{font-size:22px;color:var(--brand)}.nav a,.nav button{color:var(--text);text-decoration:none;border:1px solid var(--border);background:transparent;border-radius:10px;padding:10px;text-align:left;cursor:pointer}main{margin-left:250px;padding:28px;max-width:1450px}.hero{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.hero h1{margin:0;font-size:36px}.hero p{color:var(--muted);margin:4px 0}.verdict{border-radius:999px;padding:10px 16px;font-weight:800;color:#fff}.notice,.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:20px;margin:18px 0}.section-title{display:flex;justify-content:space-between;gap:16px;align-items:center}.section-title input{min-width:310px;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);padding:10px 12px}.cards{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:16px}.card{text-align:center;border:1px solid var(--border);border-radius:16px;padding:16px;background:linear-gradient(180deg,rgba(37,99,235,.08),transparent)}.card svg{width:120px;height:120px}.gauge-bg{fill:none;stroke:var(--border);stroke-width:10}.gauge{fill:none;stroke:var(--brand);stroke-linecap:round;stroke-width:10;transform:rotate(-90deg);transform-origin:50% 50%}.score-critical .gauge,.score-critical.verdict{stroke:var(--bad);background:var(--bad)}.score-attention .gauge,.score-attention.verdict{stroke:var(--warn);background:var(--warn)}.score-good .gauge,.score-excellent .gauge,.score-good.verdict,.score-excellent.verdict{stroke:var(--ok);background:var(--ok)}.card text{font-size:28px;font-weight:800;fill:var(--text)}.meta-grid,.component-grid{display:grid;grid-template-columns:repeat(3,minmax(190px,1fr));gap:12px;margin-top:16px}.component,.meta{border:1px solid var(--border);border-radius:12px;padding:12px;min-width:0}.component span,.meta span{display:block;color:var(--muted);font-size:13px}.component strong,.meta strong{display:block;word-break:break-word}.component small{color:var(--muted)}.severity-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.chip{border:1px solid var(--border);border-radius:999px;background:var(--bg);color:var(--text);padding:7px 10px;cursor:pointer}.chip.critical,.finding.critical{border-color:var(--bad)}.chip.high,.finding.high{border-color:#ef4444}.chip.medium,.finding.medium{border-color:var(--warn)}.chip.low,.finding.low{border-color:var(--brand)}.finding{border-left:6px solid var(--brand);background:rgba(37,99,235,.06);border-radius:12px;padding:14px;margin:12px 0}.finding h3{display:flex;justify-content:space-between;gap:12px;margin:0 0 6px}.finding.critical,.finding.high{background:rgba(220,38,38,.08);border-left-color:var(--bad)}.finding.medium{background:rgba(245,158,11,.08);border-left-color:var(--warn)}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{color:var(--muted);font-size:13px;cursor:pointer}.kv th{width:32%;cursor:default}.status{border-radius:999px;padding:4px 8px;background:var(--border);display:inline-block}.status-success{background:rgba(22,163,74,.18);color:var(--ok)}.status-failed,.status-timedout{background:rgba(220,38,38,.18);color:var(--bad)}.status-partial,.status-skipped{background:rgba(245,158,11,.18);color:var(--warn)}code,pre{background:var(--code);border-radius:8px}code{padding:2px 5px}pre{white-space:pre-wrap;word-break:break-word;border:1px solid var(--border);padding:14px;max-height:540px;overflow:auto}.data-section{border:1px solid var(--border);border-radius:12px;padding:10px;margin:10px 0}.data-section summary{cursor:pointer}.data-section summary span{float:right;color:var(--muted)}.empty,.footer{color:var(--muted)}.footer{padding:20px;text-align:center}.hidden{display:none!important}@media (max-width:950px){.nav{position:static;width:auto}.nav a,.nav button{display:inline-block}main{margin:0;padding:16px}.cards,.meta-grid,.component-grid{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}.section-title{flex-direction:column;align-items:stretch}.section-title input{min-width:0}}@media print{.nav,#search,#theme,.severity-strip{display:none}main{margin:0}.panel,.notice{box-shadow:none;break-inside:avoid}pre{max-height:none}}
+</style>
+</head>
+<body>
+<aside class="nav">
+<div class="brand"><strong>LaptopInspector</strong><span>offline report</span></div>
+<a href="#dashboard">Dashboard</a>
+<a href="#components">Компоненты</a>
+<a href="#findings">Проблемы</a>
+<a href="#collectors">Журнал сбора</a>
+<a href="#sections">Разделы данных</a>
+<a href="#raw">Raw JSON</a>
+<button id="theme" type="button">Сменить тему</button>
+<div class="mini">Overall<br><b>97/100</b></div>
+</aside>
+<main>
+<header class="hero">
+<div>
+<h1>Отчёт анализа ноутбука</h1>
+<p>25 ноября 2026 г. 22:01 · 0.5.0-stage5 · Microsoft Windows 10.0.19045</p>
+</div>
+<span class="verdict score-excellent">Отличное</span>
+</header>
+<section class="notice">Отчёт создан в режиме read-only. Он может содержать сведения о железе, драйверах, ПО, сети, безопасности, журналах событий и здоровье компонентов. Пароли, Wi‑Fi ключи, BitLocker recovery keys, cookies, история браузера и содержимое пользовательских файлов не собираются.</section>
+<section id="dashboard" class="panel">
+<div class="section-title"><h2>Dashboard</h2><input id="search" placeholder="Поиск по отчёту" autocomplete="off"></div>
+<div class="cards scores">
+<article class="card score-card score-excellent">
+<svg viewBox="0 0 120 120" aria-label="Hardware 100">
+<circle class="gauge-bg" cx="60" cy="60" r="45"></circle>
+<circle class="gauge" cx="60" cy="60" r="45" stroke-dasharray="282,74" stroke-dashoffset="0.00"></circle>
+<text x="60" y="66" text-anchor="middle">100</text>
+</svg>
+<h3>Hardware</h3>
+</article>
+<article class="card score-card score-excellent">
+<svg viewBox="0 0 120 120" aria-label="Security 93">
+<circle class="gauge-bg" cx="60" cy="60" r="45"></circle>
+<circle class="gauge" cx="60" cy="60" r="45" stroke-dasharray="282,74" stroke-dashoffset="19.79"></circle>
+<text x="60" y="66" text-anchor="middle">93</text>
+</svg>
+<h3>Security</h3>
+</article>
+<article class="card score-card score-excellent">
+<svg viewBox="0 0 120 120" aria-label="Stability 98">
+<circle class="gauge-bg" cx="60" cy="60" r="45"></circle>
+<circle class="gauge" cx="60" cy="60" r="45" stroke-dasharray="282,74" stroke-dashoffset="5.65"></circle>
+<text x="60" y="66" text-anchor="middle">98</text>
+</svg>
+<h3>Stability</h3>
+</article>
+<article class="card score-card score-excellent">
+<svg viewBox="0 0 120 120" aria-label="Overall 97">
+<circle class="gauge-bg" cx="60" cy="60" r="45"></circle>
+<circle class="gauge" cx="60" cy="60" r="45" stroke-dasharray="282,74" stroke-dashoffset="8.48"></circle>
+<text x="60" y="66" text-anchor="middle">97</text>
+</svg>
+<h3>Overall</h3>
+</article>
+</div>
+<div class="severity-strip">
+<button class="chip critical" data-severity="Critical">Critical: 0</button>
+<button class="chip high" data-severity="High">High: 0</button>
+<button class="chip medium" data-severity="Medium">Medium: 1</button>
+<button class="chip low" data-severity="Low">Low: 1</button>
+<button class="chip info" data-severity="Info">Info: 0</button>
+<button class="chip" data-severity="all">Все</button>
+</div>
+<div class="meta-grid">
+<div class="meta">
+<span>Компьютер</span>
+<strong>нет данных</strong>
+</div>
+<div class="meta">
+<span>Администратор</span>
+<strong>нет</strong>
+</div>
+<div class="meta">
+<span>Анонимизация</span>
+<strong>да</strong>
+</div>
+<div class="meta">
+<span>Длительность</span>
+<strong>30,082 мс</strong>
+</div>
+<div class="meta">
+<span>Форматы</span>
+<strong>html, json, txt</strong>
+</div>
+<div class="meta">
+<span>SHA-256</span>
+<strong>см. JSON-отчёт</strong>
+</div>
+</div>
+</section>
+<section id="components" class="panel searchable">
+<h2>Ключевые компоненты</h2>
+<div class="component-grid">
+<article class="component">
+<span>CPU</span>
+<strong>нет данных</strong>
+<small>Ядра/потоки: нет данных/нет данных</small>
+</article>
+<article class="component">
+<span>RAM</span>
+<strong>нет данных</strong>
+<small>Модулей: 0</small>
+</article>
+<article class="component">
+<span>Storage</span>
+<strong>0 дисков</strong>
+<small>Max NVMe used: нет данных</small>
+</article>
+<article class="component">
+<span>Battery</span>
+<strong>0 батарей</strong>
+<small>Max wear: нет данных%</small>
+</article>
+<article class="component">
+<span>GPU/Display</span>
+<strong>нет данных</strong>
+<small>Outputs: 0</small>
+</article>
+<article class="component">
+<span>OS</span>
+<strong>нет данных</strong>
+<small>Build: нет данных</small>
+</article>
+<article class="component">
+<span>Network</span>
+<strong>0 адаптеров</strong>
+<small>Wi‑Fi interfaces: 0</small>
+</article>
+<article class="component">
+<span>Security</span>
+<strong>93/100</strong>
+<small>Findings: 1</small>
+</article>
+</div>
+</section>
+<section id="findings" class="panel searchable">
+<h2>Проблемы и рекомендации</h2>
+<article class="finding medium" data-severity="Medium">
+<h3>Device Guard / VBS не активен <span>Medium</span></h3>
+<p>DeviceGuard security services running не обнаружены.</p>
+<p><strong>Рекомендация:</strong> Для Windows 11 проверьте Memory Integrity/VBS, если это поддерживается устройством.</p>
+<code>SEC-013 · Security · $..security.overview.deviceGuard.SecurityServicesRunning</code>
+</article>
+<article class="finding low" data-severity="Low">
+<h3>Есть сборщики с таймаутом <span>Low</span></h3>
+<p>Один или несколько модулей превысили таймаут: hardware.bus=TimedOut, hardware.memory=TimedOut, hardware.processor=TimedOut, native.abi=TimedOut, native.battery=TimedOut, native.deviceTree=TimedOut, native.display=TimedOut, native.firmware=TimedOut, native.sensors=TimedOut, native.storage=TimedOut, native.tpm=TimedOut, native.usb=TimedOut, native.wlan=TimedOut, network.overview=TimedOut, os.windows=TimedOut, peripherals.audioCameraInput=TimedOut, power.thermal=TimedOut, runtime.environment=TimedOut, scan.configuration=TimedOut, security.overview=TimedOut, software.inventory=TimedOut, stability.events=TimedOut, system.identity=TimedOut, virtualization.environment=TimedOut</p>
+<p><strong>Рекомендация:</strong> Увеличьте --timeout или исключите медленные модули через --exclude.</p>
+<code>COL-002 · Collection · collectors</code>
+</article>
+</section>
+<section id="collectors" class="panel searchable">
+<h2>Журнал сбора</h2>
+<table class="sortable"><thead><tr><th>ID</th><th>Категория</th><th>Статус</th><th>Длительность</th><th>Ошибки/причина</th></tr></thead><tbody>
+<tr>
+<td><code>hardware.bus</code></td>
+<td>hardware</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>hardware.memory</code></td>
+<td>hardware</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>hardware.processor</code></td>
+<td>hardware</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.abi</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.battery</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.deviceTree</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.display</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.firmware</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.sensors</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.storage</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.tpm</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.usb</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>native.wlan</code></td>
+<td>native</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>network.overview</code></td>
+<td>network</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>os.windows</code></td>
+<td>os</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>peripherals.audioCameraInput</code></td>
+<td>peripherals</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>power.thermal</code></td>
+<td>power</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>runtime.environment</code></td>
+<td>runtime</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>scan.configuration</code></td>
+<td>scan</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>security.overview</code></td>
+<td>security</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>software.inventory</code></td>
+<td>software</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>stability.events</code></td>
+<td>stability</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>system.identity</code></td>
+<td>system</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+<tr>
+<td><code>virtualization.environment</code></td>
+<td>virtualization</td>
+<td><span class="status status-timedout">TimedOut</span></td>
+<td data-sort="0">0 мс</td>
+<td>Сборщик превысил таймаут 00:00:30.</td>
+</tr>
+</tbody></table>
+</section>
+<section id="sections" class="panel searchable">
+<h2>Разделы данных</h2>
+<details class="data-section">
+<summary><code>hardware.bus</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>hardware.memory</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>hardware.processor</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.abi</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.battery</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.deviceTree</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.display</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.firmware</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.sensors</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.storage</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.tpm</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.usb</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>native.wlan</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>network.overview</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>os.windows</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>peripherals.audioCameraInput</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>power.thermal</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>runtime.environment</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>scan.configuration</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>security.overview</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>software.inventory</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>stability.events</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>system.identity</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+<details class="data-section">
+<summary><code>virtualization.environment</code> <span>1 полей</span></summary>
+<table class="kv"><tbody>
+<tr><th>timeoutMs</th><td>30,000</td></tr>
+</tbody></table>
+<details><summary>JSON раздела</summary>
+<pre>{
+  &quot;timeoutMs&quot;: 30000
+}</pre>
+</details>
+</details>
+</section>
+<section id="raw" class="panel searchable">
+<h2>Сырые данные</h2>
+<details><summary>Показать полный JSON data</summary>
+<pre>{
+  &quot;hardware.bus&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;hardware.memory&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;hardware.processor&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.abi&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.battery&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.deviceTree&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.display&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.firmware&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.sensors&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.storage&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.tpm&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.usb&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;native.wlan&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;network.overview&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;os.windows&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;peripherals.audioCameraInput&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;power.thermal&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;runtime.environment&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;scan.configuration&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;security.overview&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;software.inventory&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;stability.events&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;system.identity&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;virtualization.environment&quot;: {
+    &quot;timeoutMs&quot;: 30000
+  },
+  &quot;health.rules&quot;: {
+    &quot;ruleLoadErrors&quot;: [],
+    &quot;penaltiesByBucket&quot;: {
+      &quot;hardware&quot;: 0,
+      &quot;security&quot;: 7,
+      &quot;stability&quot;: 2
+    },
+    &quot;formula&quot;: &quot;overall = hardware*0.45 + security*0.35 + stability*0.20; bucket score = 100 - capped penalties&quot;
+  }
+}</pre>
+</details>
+</section>
+<footer class="footer">
+Сгенерировано LaptopInspector 0.5.0-stage5. Schema: 1.0.0. SHA-256: см. JSON
+</footer>
+</main>
+<script>
+const root=document.documentElement;document.getElementById('theme').addEventListener('click',()=>root.classList.toggle('dark'));
+const search=document.getElementById('search');search.addEventListener('input',()=>{const q=search.value.toLowerCase();document.querySelectorAll('.searchable').forEach(s=>{s.classList.toggle('hidden',q&& !s.innerText.toLowerCase().includes(q));});});
+document.querySelectorAll('[data-severity]').forEach(btn=>btn.addEventListener('click',()=>{const sev=btn.dataset.severity;document.querySelectorAll('.finding').forEach(f=>f.classList.toggle('hidden',sev!=='all'&&f.dataset.severity!==sev));}));
+document.querySelectorAll('table.sortable th').forEach((th,i)=>th.addEventListener('click',()=>{const table=th.closest('table');const rows=[...table.tBodies[0].rows];const asc=th.dataset.asc!=='true';rows.sort((a,b)=>{const av=a.cells[i].dataset.sort||a.cells[i].innerText;const bv=b.cells[i].dataset.sort||b.cells[i].innerText;const an=Number(av),bn=Number(bv);return (isNaN(an)||isNaN(bn)?av.localeCompare(bv):an-bn)*(asc?1:-1);});rows.forEach(r=>table.tBodies[0].appendChild(r));th.dataset.asc=String(asc);}));
+</script>
+</body>
+</html>

@@ -1,0 +1,1365 @@
+namespace LaptopInspector.Core.Rules;
+
+internal static class HealthRuleCatalog
+{
+    public const string RulesFileName = "rules.json";
+
+    public const string DefaultRulesJson = """
+{
+  "schemaVersion": "1.0",
+  "scoreWeights": {
+    "hardware": 0.45,
+    "security": 0.35,
+    "stability": 0.2
+  },
+  "rules": [
+    {
+      "id": "COL-001",
+      "severity": "Medium",
+      "scoreBucket": "stability",
+      "category": "Collection",
+      "title": "Есть сборщики с ошибкой",
+      "details": "Один или несколько модулей завершились ошибкой: {value}",
+      "recommendation": "Проверьте журнал сбора и повторите запуск с --verbose или правами администратора.",
+      "condition": {
+        "source": "collector",
+        "operator": "statusIn",
+        "statuses": [
+          "Failed"
+        ]
+      }
+    },
+    {
+      "id": "COL-002",
+      "severity": "Low",
+      "scoreBucket": "stability",
+      "category": "Collection",
+      "title": "Есть сборщики с таймаутом",
+      "details": "Один или несколько модулей превысили таймаут: {value}",
+      "recommendation": "Увеличьте --timeout или исключите медленные модули через --exclude.",
+      "condition": {
+        "source": "collector",
+        "operator": "statusIn",
+        "statuses": [
+          "TimedOut"
+        ]
+      }
+    },
+    {
+      "id": "COL-003",
+      "severity": "Info",
+      "scoreBucket": "stability",
+      "category": "Collection",
+      "title": "Часть сборщиков пропущена",
+      "details": "Некоторые модули помечены как Skipped: {value}",
+      "recommendation": "Если нужен полный отчёт, запустите на Windows с правами администратора и нативной DLL рядом с exe.",
+      "condition": {
+        "source": "collector",
+        "operator": "statusIn",
+        "statuses": [
+          "Skipped"
+        ]
+      }
+    },
+    {
+      "id": "BAT-001",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Battery",
+      "title": "Износ аккумулятора выше 20%",
+      "details": "Оценочный износ аккумулятора: {value}%.",
+      "recommendation": "Проверьте автономность; при заметной деградации планируйте замену батареи.",
+      "condition": {
+        "path": [
+          "native.battery",
+          "batteries",
+          "*",
+          "information",
+          "wearPercent"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 20
+      }
+    },
+    {
+      "id": "BAT-002",
+      "severity": "High",
+      "scoreBucket": "hardware",
+      "category": "Battery",
+      "title": "Сильный износ аккумулятора выше 40%",
+      "details": "Оценочный износ аккумулятора достиг {value}%.",
+      "recommendation": "Рекомендуется замена аккумулятора или диагностика питания у производителя.",
+      "condition": {
+        "path": [
+          "native.battery",
+          "batteries",
+          "*",
+          "information",
+          "wearPercent"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 40
+      }
+    },
+    {
+      "id": "BAT-003",
+      "severity": "Low",
+      "scoreBucket": "hardware",
+      "category": "Battery",
+      "title": "Большое число циклов батареи",
+      "details": "Обнаружен аккумулятор с числом циклов {value}.",
+      "recommendation": "Отслеживайте ёмкость и автономность; ресурс батареи может подходить к концу.",
+      "condition": {
+        "path": [
+          "native.battery",
+          "batteries",
+          "*",
+          "information",
+          "cycleCount"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 500
+      }
+    },
+    {
+      "id": "BAT-004",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Battery",
+      "title": "Очень большое число циклов батареи",
+      "details": "Обнаружен аккумулятор с числом циклов {value}.",
+      "recommendation": "Рекомендуется проверить батарею фирменной утилитой и рассмотреть замену.",
+      "condition": {
+        "path": [
+          "native.battery",
+          "batteries",
+          "*",
+          "information",
+          "cycleCount"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 1000
+      }
+    },
+    {
+      "id": "BAT-005",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Battery",
+      "title": "Низкая текущая ёмкость батареи",
+      "details": "Текущая ёмкость батареи мала: {value} мВт·ч.",
+      "recommendation": "Проверьте зарядное устройство, кабель и состояние батареи.",
+      "condition": {
+        "path": [
+          "native.battery",
+          "batteries",
+          "*",
+          "statusInfo",
+          "capacityMWh"
+        ],
+        "operator": "anyLessThan",
+        "number": 5000
+      }
+    },
+    {
+      "id": "STO-001",
+      "severity": "Critical",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "NVMe Critical Warning не равен нулю",
+      "details": "NVMe сообщает Critical Warning: {value}.",
+      "recommendation": "Срочно сделайте резервную копию и проверьте накопитель фирменной утилитой.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "nvmeHealth",
+          "criticalWarning"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 0
+      }
+    },
+    {
+      "id": "STO-002",
+      "severity": "High",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "NVMe Percentage Used выше 80%",
+      "details": "Оценка использованного ресурса NVMe: {value}%.",
+      "recommendation": "Планируйте замену SSD и проверьте TBW по спецификации производителя.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "nvmeHealth",
+          "percentageUsed"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 80
+      }
+    },
+    {
+      "id": "STO-003",
+      "severity": "Critical",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "NVMe Percentage Used выше 100%",
+      "details": "NVMe сообщает ресурс выше паспортного значения: {value}%.",
+      "recommendation": "Срочно замените накопитель после резервного копирования.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "nvmeHealth",
+          "percentageUsed"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 100
+      }
+    },
+    {
+      "id": "STO-004",
+      "severity": "High",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "NVMe Media/Data Integrity Errors",
+      "details": "NVMe накопитель сообщает ошибки носителя: {value}.",
+      "recommendation": "Сделайте резервную копию, проверьте SMART/Health и обновления прошивки SSD.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "nvmeHealth",
+          "mediaAndDataIntegrityErrors",
+          "raw"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 0
+      }
+    },
+    {
+      "id": "STO-005",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "NVMe Unsafe Shutdowns",
+      "details": "NVMe сообщает небезопасные отключения: {value}.",
+      "recommendation": "Проверьте питание, батарею, события Kernel-Power и корректность завершения работы.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "nvmeHealth",
+          "unsafeShutdowns",
+          "raw"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 10
+      }
+    },
+    {
+      "id": "STO-006",
+      "severity": "High",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "SMART Reallocated Sectors больше нуля",
+      "details": "SMART ID 5 raw value: {value}.",
+      "recommendation": "Сделайте резервную копию и замените диск при росте значения.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "ataSmart",
+          "attributes",
+          "*",
+          "id"
+        ],
+        "operator": "anyEqualsWithSiblingGreaterThan",
+        "number": 5,
+        "text": "rawValue:0"
+      }
+    },
+    {
+      "id": "STO-007",
+      "severity": "High",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "SMART Current Pending Sector больше нуля",
+      "details": "SMART ID 197 обнаружил ожидающие сектора.",
+      "recommendation": "Срочно сделайте резервную копию и выполните расширенную диагностику диска.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "ataSmart",
+          "attributes",
+          "*",
+          "id"
+        ],
+        "operator": "anyEqualsWithSiblingGreaterThan",
+        "number": 197,
+        "text": "rawValue:0"
+      }
+    },
+    {
+      "id": "STO-008",
+      "severity": "High",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "SMART Offline Uncorrectable больше нуля",
+      "details": "SMART ID 198 обнаружил неисправимые ошибки.",
+      "recommendation": "Срочно сделайте резервную копию и рассмотрите замену накопителя.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "ataSmart",
+          "attributes",
+          "*",
+          "id"
+        ],
+        "operator": "anyEqualsWithSiblingGreaterThan",
+        "number": 198,
+        "text": "rawValue:0"
+      }
+    },
+    {
+      "id": "STO-009",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "SMART CRC errors",
+      "details": "SMART ID 199 показывает ошибки интерфейса.",
+      "recommendation": "Проверьте кабель/контроллер/док-станцию; для ноутбука проверьте события stornvme/disk.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "ataSmart",
+          "attributes",
+          "*",
+          "id"
+        ],
+        "operator": "anyEqualsWithSiblingGreaterThan",
+        "number": 199,
+        "text": "rawValue:0"
+      }
+    },
+    {
+      "id": "STO-010",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "Высокая температура NVMe",
+      "details": "Температура NVMe: {value} °C.",
+      "recommendation": "Проверьте охлаждение SSD, термопрокладку и воздушный поток.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "nvmeHealth",
+          "temperatureCelsius"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 70
+      }
+    },
+    {
+      "id": "STO-011",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "Высокая температура ATA/SATA диска",
+      "details": "SMART температура: {value} °C.",
+      "recommendation": "Проверьте охлаждение накопителя и нагрузку диска.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "ataSmart",
+          "attributes",
+          "*",
+          "temperatureCelsius"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 55
+      }
+    },
+    {
+      "id": "STO-012",
+      "severity": "Low",
+      "scoreBucket": "hardware",
+      "category": "Storage",
+      "title": "Накопитель с механическим seek penalty",
+      "details": "Обнаружен диск, требующий seek penalty.",
+      "recommendation": "Для системного диска предпочтителен SSD; проверьте, не установлен ли HDD как основной накопитель.",
+      "condition": {
+        "path": [
+          "native.storage",
+          "physicalDrives",
+          "*",
+          "seekPenalty",
+          "incursSeekPenalty"
+        ],
+        "operator": "anyEquals",
+        "boolean": true
+      }
+    },
+    {
+      "id": "THR-001",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Thermal",
+      "title": "Высокая температура ACPI thermal zone",
+      "details": "Thermal zone показывает высокую температуру: {value}.",
+      "recommendation": "Проверьте охлаждение, пыль, режим питания и фоновые процессы.",
+      "condition": {
+        "path": [
+          "power.thermal",
+          "thermalZones",
+          "*",
+          "CurrentTemperature"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 3432
+      }
+    },
+    {
+      "id": "THR-002",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Thermal",
+      "title": "События ограничения производительности CPU",
+      "details": "За период найдены события Kernel-Processor-Power 37: {value}.",
+      "recommendation": "Проверьте охлаждение, BIOS, режим питания и блок питания.",
+      "condition": {
+        "path": [
+          "power.thermal",
+          "processorPowerThrottlingEvents",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "MEM-001",
+      "severity": "Low",
+      "scoreBucket": "hardware",
+      "category": "Memory",
+      "title": "Свободные слоты памяти не обнаружены",
+      "details": "Эвристика показывает отсутствие свободных слотов RAM.",
+      "recommendation": "Проверьте спецификацию ноутбука перед апгрейдом памяти.",
+      "condition": {
+        "path": [
+          "hardware.memory",
+          "upgradeHeuristic",
+          "freeSlotsKnown"
+        ],
+        "operator": "equals",
+        "number": 0
+      }
+    },
+    {
+      "id": "MEM-002",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Memory",
+      "title": "Очень мало доступной памяти",
+      "details": "Доступно мало памяти: {value} МБ.",
+      "recommendation": "Закройте лишние приложения или рассмотрите увеличение RAM.",
+      "condition": {
+        "path": [
+          "hardware.memory",
+          "performance",
+          "AvailableMBytes"
+        ],
+        "operator": "anyLessThan",
+        "number": 1024
+      }
+    },
+    {
+      "id": "DEV-001",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Devices",
+      "title": "Устройства с Problem Code",
+      "details": "Обнаружены PnP-устройства с кодом проблемы: {value}.",
+      "recommendation": "Откройте Диспетчер устройств и обновите/переустановите проблемные драйверы.",
+      "condition": {
+        "path": [
+          "native.deviceTree",
+          "devices",
+          "*",
+          "cmStatus",
+          "problemCode"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 0
+      }
+    },
+    {
+      "id": "DEV-002",
+      "severity": "Low",
+      "scoreBucket": "hardware",
+      "category": "Devices",
+      "title": "USB-устройства с Problem Code",
+      "details": "USB-устройство сообщает problem code: {value}.",
+      "recommendation": "Проверьте USB-порт, кабель, питание хаба и драйвер устройства.",
+      "condition": {
+        "path": [
+          "native.usb",
+          "devices",
+          "*",
+          "problemCode"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 0
+      }
+    },
+    {
+      "id": "GPU-001",
+      "severity": "Low",
+      "scoreBucket": "hardware",
+      "category": "Display",
+      "title": "DXGI не нашёл адаптеры",
+      "details": "Список DXGI adapters пуст.",
+      "recommendation": "Проверьте видеодрайвер, Device Manager и корректность запуска в интерактивной сессии.",
+      "condition": {
+        "path": [
+          "native.display",
+          "dxgiAdapters",
+          "*"
+        ],
+        "operator": "countEquals",
+        "number": 0
+      }
+    },
+    {
+      "id": "GPU-002",
+      "severity": "Info",
+      "scoreBucket": "hardware",
+      "category": "Display",
+      "title": "Нет активных DisplayConfig paths",
+      "details": "Активные пути дисплея не обнаружены.",
+      "recommendation": "Если отчёт снят в headless/RDP-сессии, это может быть нормальным.",
+      "condition": {
+        "path": [
+          "native.display",
+          "displayConfig",
+          "pathCount"
+        ],
+        "operator": "equals",
+        "number": 0
+      }
+    },
+    {
+      "id": "NET-001",
+      "severity": "Low",
+      "scoreBucket": "security",
+      "category": "Network",
+      "title": "Открыты входящие firewall allow rules",
+      "details": "В выборке есть разрешающие входящие правила: {value}.",
+      "recommendation": "Проверьте, нужны ли все входящие исключения брандмауэра.",
+      "condition": {
+        "path": [
+          "network.overview",
+          "inboundAllowRulesSample",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 20
+      }
+    },
+    {
+      "id": "NET-002",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Network",
+      "title": "WinRM запущен",
+      "details": "Служба WinRM находится в состоянии: {value}.",
+      "recommendation": "Если удалённое управление не требуется, отключите WinRM или ограничьте доступ правилами firewall.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "winRm",
+          "Status"
+        ],
+        "operator": "containsText",
+        "text": "Running"
+      }
+    },
+    {
+      "id": "NET-003",
+      "severity": "Low",
+      "scoreBucket": "security",
+      "category": "Network",
+      "title": "Нестандартные entries в hosts",
+      "details": "Файл hosts содержит активные записи: {value}.",
+      "recommendation": "Проверьте файл hosts на нежелательные переопределения доменов.",
+      "condition": {
+        "path": [
+          "network.overview",
+          "hostsNonCommentEntries",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "SEC-001",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "Secure Boot выключен или недоступен",
+      "details": "Secure Boot enabled: {value}.",
+      "recommendation": "Включите Secure Boot в UEFI, если это поддерживается и не мешает рабочим задачам.",
+      "condition": {
+        "path": [
+          "native.firmware",
+          "secureBoot",
+          "enabled"
+        ],
+        "operator": "equals",
+        "boolean": false
+      }
+    },
+    {
+      "id": "SEC-002",
+      "severity": "High",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "Антивирусы не обнаружены",
+      "details": "SecurityCenter2 не вернул активные AV-продукты.",
+      "recommendation": "Включите Microsoft Defender или установите поддерживаемый антивирус.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "antivirusProducts",
+          "*"
+        ],
+        "operator": "countEquals",
+        "number": 0
+      }
+    },
+    {
+      "id": "SEC-003",
+      "severity": "High",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "Defender Real-time Protection выключен",
+      "details": "RealTimeProtectionEnabled = {value}.",
+      "recommendation": "Включите защиту в реальном времени Microsoft Defender.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "defender",
+          "RealTimeProtectionEnabled"
+        ],
+        "operator": "equals",
+        "boolean": false
+      }
+    },
+    {
+      "id": "SEC-004",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "Defender signatures out of date",
+      "details": "DefenderSignaturesOutOfDate = {value}.",
+      "recommendation": "Обновите сигнатуры Microsoft Defender.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "defender",
+          "DefenderSignaturesOutOfDate"
+        ],
+        "operator": "equals",
+        "boolean": true
+      }
+    },
+    {
+      "id": "SEC-005",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "BitLocker отключён на одном или нескольких томах",
+      "details": "Найден том с ProtectionStatus Off.",
+      "recommendation": "Включите BitLocker для системного и важных рабочих томов.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "bitLockerVolumes",
+          "*",
+          "ProtectionStatus"
+        ],
+        "operator": "anyContainsText",
+        "text": "Off"
+      }
+    },
+    {
+      "id": "SEC-006",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "TPM не готов",
+      "details": "TPM present/ready не подтверждён: {value}.",
+      "recommendation": "Проверьте TPM в UEFI и Windows Security.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "tpm",
+          "TpmReady"
+        ],
+        "operator": "equals",
+        "boolean": false
+      }
+    },
+    {
+      "id": "SEC-007",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "UAC отключён",
+      "details": "EnableLUA = {value}.",
+      "recommendation": "Включите UAC для снижения риска несанкционированных изменений.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "uac",
+          "EnableLUA"
+        ],
+        "operator": "equals",
+        "number": 0
+      }
+    },
+    {
+      "id": "SEC-008",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "RDP включён",
+      "details": "fDenyTSConnections = {value}.",
+      "recommendation": "Если RDP не нужен, отключите его. Если нужен — используйте NLA, VPN и ограничение firewall.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "rdp",
+          "terminalServer",
+          "fDenyTSConnections"
+        ],
+        "operator": "equals",
+        "number": 0
+      }
+    },
+    {
+      "id": "SEC-009",
+      "severity": "High",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "RDP NLA отключён",
+      "details": "UserAuthentication = {value}.",
+      "recommendation": "Включите Network Level Authentication для RDP.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "rdp",
+          "nla",
+          "UserAuthentication"
+        ],
+        "operator": "equals",
+        "number": 0
+      }
+    },
+    {
+      "id": "SEC-010",
+      "severity": "High",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "SMBv1 включён",
+      "details": "SMB1Protocol state: {value}.",
+      "recommendation": "Отключите SMBv1, если нет строгой зависимости от устаревшего оборудования.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "smb1",
+          "State"
+        ],
+        "operator": "containsText",
+        "text": "Enabled"
+      }
+    },
+    {
+      "id": "SEC-011",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "PowerShell ExecutionPolicy Unrestricted/Bypass",
+      "details": "ExecutionPolicy содержит небезопасное значение: {value}.",
+      "recommendation": "Используйте RemoteSigned/AllSigned там, где это совместимо с рабочими процессами.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "powerShellExecutionPolicy",
+          "*",
+          "ExecutionPolicy"
+        ],
+        "operator": "anyIn",
+        "values": [
+          "Unrestricted",
+          "Bypass"
+        ]
+      }
+    },
+    {
+      "id": "SEC-012",
+      "severity": "Low",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "Есть исключения Defender",
+      "details": "Defender содержит исключения путей/процессов/расширений.",
+      "recommendation": "Проверьте исключения Defender на актуальность и необходимость.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "defenderPreferencesSummary",
+          "exclusionPathCount"
+        ],
+        "operator": "greaterThan",
+        "number": 0
+      }
+    },
+    {
+      "id": "SEC-013",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "Device Guard / VBS не активен",
+      "details": "DeviceGuard security services running не обнаружены.",
+      "recommendation": "Для Windows 11 проверьте Memory Integrity/VBS, если это поддерживается устройством.",
+      "condition": {
+        "path": [
+          "security.overview",
+          "deviceGuard",
+          "SecurityServicesRunning"
+        ],
+        "operator": "isNullOrEmpty"
+      }
+    },
+    {
+      "id": "OS-001",
+      "severity": "Info",
+      "scoreBucket": "stability",
+      "category": "OperatingSystem",
+      "title": "Ожидается перезагрузка",
+      "details": "Windows имеет признаки pending reboot.",
+      "recommendation": "Перезагрузите систему для завершения установки обновлений или изменений компонентов.",
+      "condition": {
+        "path": [
+          "os.windows",
+          "pendingReboot",
+          "pending"
+        ],
+        "operator": "equals",
+        "boolean": true
+      }
+    },
+    {
+      "id": "OS-002",
+      "severity": "Low",
+      "scoreBucket": "security",
+      "category": "OperatingSystem",
+      "title": "Мало установленных hotfix entries",
+      "details": "Список Get-HotFix пуст или недоступен.",
+      "recommendation": "Проверьте Windows Update и историю обновлений.",
+      "condition": {
+        "path": [
+          "os.windows",
+          "hotFixes",
+          "*"
+        ],
+        "operator": "countEquals",
+        "number": 0
+      }
+    },
+    {
+      "id": "OS-003",
+      "severity": "Low",
+      "scoreBucket": "stability",
+      "category": "OperatingSystem",
+      "title": "Некорректные PATH entries возможны",
+      "details": "PATH содержит много записей: {value}.",
+      "recommendation": "Проверьте PATH на несуществующие и устаревшие директории.",
+      "condition": {
+        "path": [
+          "os.windows",
+          "environment",
+          "machinePathEntries",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 80
+      }
+    },
+    {
+      "id": "SW-001",
+      "severity": "Low",
+      "scoreBucket": "security",
+      "category": "Software",
+      "title": "Много элементов автозагрузки",
+      "details": "Количество Run/RunOnce элементов: {value}.",
+      "recommendation": "Проверьте автозагрузку и отключите лишние элементы.",
+      "condition": {
+        "path": [
+          "software.inventory",
+          "autoruns",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 15
+      }
+    },
+    {
+      "id": "SW-002",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Software",
+      "title": "Службы с LocalSystem и Auto",
+      "details": "Обнаружено много автозапускаемых служб от LocalSystem: {value}.",
+      "recommendation": "Проверьте сторонние службы с высокими привилегиями.",
+      "condition": {
+        "path": [
+          "software.inventory",
+          "services",
+          "*",
+          "StartName"
+        ],
+        "operator": "countTextGreaterOrEqual",
+        "text": "LocalSystem",
+        "number": 20
+      }
+    },
+    {
+      "id": "SW-003",
+      "severity": "Medium",
+      "scoreBucket": "security",
+      "category": "Software",
+      "title": "Есть остановленные Auto-службы",
+      "details": "Auto-службы в состоянии Stopped могут указывать на сбой.",
+      "recommendation": "Проверьте службы автозапуска, которые не стартовали после загрузки.",
+      "condition": {
+        "path": [
+          "software.inventory",
+          "services",
+          "*",
+          "State"
+        ],
+        "operator": "anyContainsText",
+        "text": "Stopped"
+      }
+    },
+    {
+      "id": "SW-004",
+      "severity": "Low",
+      "scoreBucket": "stability",
+      "category": "Software",
+      "title": "Много запланированных задач",
+      "details": "Количество задач в выборке: {value}.",
+      "recommendation": "Проверьте Scheduled Tasks на устаревшие и ненужные элементы.",
+      "condition": {
+        "path": [
+          "software.inventory",
+          "scheduledTasks",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 300
+      }
+    },
+    {
+      "id": "STB-001",
+      "severity": "High",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "BSOD за анализируемый период",
+      "details": "Найдены BugCheck events: {value}.",
+      "recommendation": "Проанализируйте minidump, драйверы и WHEA/disk события вокруг времени сбоя.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "bugChecks",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "STB-002",
+      "severity": "Critical",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "WHEA аппаратные ошибки",
+      "details": "Найдены события WHEA-Logger: {value}.",
+      "recommendation": "Проверьте CPU/RAM/PCIe/SSD, BIOS и стабильность питания. Это критичный аппаратный сигнал.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "wheaLogger",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "STB-003",
+      "severity": "Medium",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "Много Kernel-Power 41",
+      "details": "Количество Kernel-Power 41: {value}.",
+      "recommendation": "Проверьте батарею, блок питания, перегрев и неожиданные отключения.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "kernelPower41",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 3
+      }
+    },
+    {
+      "id": "STB-004",
+      "severity": "Medium",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "Неожиданные завершения работы",
+      "details": "Найдены события 6008: {value}.",
+      "recommendation": "Проверьте питание и корректность выключения системы.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "unexpectedShutdown6008",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 2
+      }
+    },
+    {
+      "id": "STB-005",
+      "severity": "High",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "Ошибки диска/файловой системы в журналах",
+      "details": "Найдены disk/NTFS/stornvme/volmgr события: {value}.",
+      "recommendation": "Проверьте SMART/NVMe Health, кабели/контроллер и целостность файловой системы.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "diskAndFileSystemErrors",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "STB-006",
+      "severity": "Medium",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "Сбои видеодрайвера TDR",
+      "details": "Найдены Display 4101 события: {value}.",
+      "recommendation": "Обновите/переустановите видеодрайвер и проверьте температуру GPU.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "displayTdr4101",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "STB-007",
+      "severity": "Low",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "Много Application Error/Hang",
+      "details": "Найдены группы падений/зависаний приложений: {value}.",
+      "recommendation": "Проверьте топ падающих приложений и обновите их.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "applicationCrashGroups",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 5
+      }
+    },
+    {
+      "id": "STB-008",
+      "severity": "High",
+      "scoreBucket": "stability",
+      "category": "Stability",
+      "title": "Найдены minidump файлы",
+      "details": "Minidump-файлы присутствуют: {value}.",
+      "recommendation": "Проанализируйте дампы WinDbg или отправьте специалисту.",
+      "condition": {
+        "path": [
+          "stability.events",
+          "minidumps",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "PERF-001",
+      "severity": "Low",
+      "scoreBucket": "stability",
+      "category": "Performance",
+      "title": "Высокая очередь процессора",
+      "details": "Processor Queue Length высокий: {value}.",
+      "recommendation": "Проверьте фоновые процессы и автозагрузку.",
+      "condition": {
+        "path": [
+          "performance.snapshot",
+          "counterSamples",
+          "*",
+          "CookedValue"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 10
+      }
+    },
+    {
+      "id": "PERF-002",
+      "severity": "Medium",
+      "scoreBucket": "stability",
+      "category": "Performance",
+      "title": "Высокая активность диска",
+      "details": "Disk time/counters выглядят высокими: {value}.",
+      "recommendation": "Проверьте процессы, индексирование, антивирусное сканирование и состояние накопителя.",
+      "condition": {
+        "path": [
+          "performance.snapshot",
+          "disk",
+          "*",
+          "PercentDiskTime"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 90
+      }
+    },
+    {
+      "id": "VIRT-001",
+      "severity": "Info",
+      "scoreBucket": "hardware",
+      "category": "Virtualization",
+      "title": "Виртуализация в прошивке отключена",
+      "details": "VirtualizationFirmwareEnabled = {value}.",
+      "recommendation": "Включите VT-x/AMD-V в UEFI, если используете Hyper-V, WSL2, Docker или эмуляторы.",
+      "condition": {
+        "path": [
+          "virtualization.environment",
+          "processor",
+          "VirtualizationFirmwareEnabled"
+        ],
+        "operator": "equals",
+        "boolean": false
+      }
+    },
+    {
+      "id": "VIRT-002",
+      "severity": "Info",
+      "scoreBucket": "stability",
+      "category": "Virtualization",
+      "title": "Обнаружены признаки VM/гипервизора",
+      "details": "Найдены VM-related devices или HypervisorPresent.",
+      "recommendation": "Если это физический ноутбук, проверьте включённый Hyper-V/VBS; если VM — отметка информативна.",
+      "condition": {
+        "path": [
+          "virtualization.environment",
+          "virtualizationDeviceHints",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 1
+      }
+    },
+    {
+      "id": "BIOS-001",
+      "severity": "Low",
+      "scoreBucket": "hardware",
+      "category": "Firmware",
+      "title": "Secure Boot variable недоступна",
+      "details": "UEFI variable SecureBoot недоступна или вернула ошибку.",
+      "recommendation": "Запустите с правами администратора и проверьте режим UEFI/Secure Boot.",
+      "condition": {
+        "path": [
+          "native.firmware",
+          "secureBoot",
+          "available"
+        ],
+        "operator": "equals",
+        "boolean": false
+      }
+    },
+    {
+      "id": "BIOS-002",
+      "severity": "Info",
+      "scoreBucket": "hardware",
+      "category": "Firmware",
+      "title": "SMBIOS недоступен",
+      "details": "Сбор SMBIOS не дал данных.",
+      "recommendation": "Проверьте поддержку GetSystemFirmwareTable и нативной DLL.",
+      "condition": {
+        "path": [
+          "native.firmware",
+          "smbios",
+          "status"
+        ],
+        "operator": "anyIn",
+        "values": [
+          "unavailable",
+          "readFailed",
+          "parseFailed"
+        ]
+      }
+    },
+    {
+      "id": "COV-001",
+      "severity": "Info",
+      "scoreBucket": "stability",
+      "category": "Coverage",
+      "title": "Отчёт содержит карту покрытия",
+      "details": "scan.coverage перечисляет покрытие разделов 4.1–4.19.",
+      "recommendation": "Используйте карту покрытия, чтобы понять, какие данные были получены, а какие требуют будущих опций или прав.",
+      "condition": {
+        "path": [
+          "scan.coverage",
+          "sections",
+          "*"
+        ],
+        "operator": "countGreaterOrEqual",
+        "number": 19
+      }
+    },
+    {
+      "id": "BENCH-001",
+      "severity": "Low",
+      "scoreBucket": "stability",
+      "category": "Performance",
+      "title": "Низкий CPU single-thread benchmark score",
+      "details": "CPU single-thread score низкий: {value}.",
+      "recommendation": "Проверьте режим питания, температуру CPU и фоновые процессы; повторите тест от сети.",
+      "condition": {
+        "path": [
+          "benchmark.synthetic",
+          "cpuSingleThread",
+          "score"
+        ],
+        "operator": "anyLessThan",
+        "number": 20
+      }
+    },
+    {
+      "id": "BENCH-002",
+      "severity": "Low",
+      "scoreBucket": "stability",
+      "category": "Performance",
+      "title": "Низкая пропускная способность памяти",
+      "details": "Memory copy bandwidth: {value} GiB/s.",
+      "recommendation": "Проверьте режим памяти, одноканальный режим, фоновые нагрузки и энергопрофиль.",
+      "condition": {
+        "path": [
+          "benchmark.synthetic",
+          "memory",
+          "copyGibPerSecond"
+        ],
+        "operator": "anyLessThan",
+        "number": 5
+      }
+    },
+    {
+      "id": "BENCH-003",
+      "severity": "Medium",
+      "scoreBucket": "stability",
+      "category": "Performance",
+      "title": "Низкая скорость временной записи диска",
+      "details": "Sequential write benchmark: {value} MiB/s.",
+      "recommendation": "Проверьте свободное место, режим питания, состояние SSD и фоновые процессы записи.",
+      "condition": {
+        "path": [
+          "benchmark.synthetic",
+          "disk",
+          "sequentialWriteMibPerSecond"
+        ],
+        "operator": "anyLessThan",
+        "number": 100
+      }
+    },
+    {
+      "id": "GPU-003",
+      "severity": "Medium",
+      "scoreBucket": "hardware",
+      "category": "Display",
+      "title": "Высокая температура GPU по NVML",
+      "details": "NVML temperature: {value} °C.",
+      "recommendation": "Проверьте охлаждение GPU, пыль, термопасту и нагрузку дискретной видеокарты.",
+      "condition": {
+        "path": [
+          "native.gpuVendor",
+          "nvml",
+          "devices",
+          "*",
+          "temperatureCelsius"
+        ],
+        "operator": "anyGreaterThan",
+        "number": 83
+      }
+    },
+    {
+      "id": "DRV-SEC-001",
+      "severity": "High",
+      "scoreBucket": "security",
+      "category": "Security",
+      "title": "Обнаружен WinRing/OpenLibSys-подобный kernel driver",
+      "details": "Найден потенциально рискованный драйвер: {value}.",
+      "recommendation": "Удалите устаревшие ring-0 утилиты мониторинга/разгона или замените их безопасными версиями.",
+      "condition": {
+        "path": [
+          "optional.driverProbe",
+          "knownDriverServices",
+          "*",
+          "Name"
+        ],
+        "operator": "countTextGreaterOrEqual",
+        "text": "WinRing",
+        "number": 1
+      }
+    }
+  ]
+}
+""";
+}

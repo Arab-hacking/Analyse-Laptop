@@ -1,0 +1,99 @@
+LaptopInspector — отчёт анализа ноутбука
+========================================================================================================================
+Дата UTC              : 2026-11-25T19:01:21.5211841+00:00
+Версия генератора     : 0.5.0-stage5
+Schema version        : 1.0.0
+Компьютер             : нет данных
+ОС                    : Microsoft Windows 10.0.19045
+Администратор         : нет
+Анонимизация          : да
+Длительность, мс      : 30 082
+Форматы               : html, json, txt
+
+ИТОГОВЫЕ ОЦЕНКИ
+====================
+Hardware Health Score : 100/100
+Security Score        :  93/100
+Stability Score       :  98/100
+Overall Score         :  97/100
+Вердикт               : Отличное
+Penalties             : hardware=0, security=7, stability=2
+
+ПРОБЛЕМЫ И РЕКОМЕНДАЦИИ
+=======================
+Severity summary      : Critical=0, High=0, Medium=1, Low=1, Info=0
+
+  1. [Medium] SEC-013 — Device Guard / VBS не активен
+     Категория: Security
+     Детали: DeviceGuard security services running не обнаружены.
+     Рекомендация: Для Windows 11 проверьте Memory Integrity/VBS, если это поддерживается устройством.
+     Evidence: $..security.overview.deviceGuard.SecurityServicesRunning
+
+  2. [Low] COL-002 — Есть сборщики с таймаутом
+     Категория: Collection
+     Детали: Один или несколько модулей превысили таймаут: hardware.bus=TimedOut, hardware.memory=TimedOut, hardware.processor=TimedOut, native.abi=TimedOut, native.battery=TimedOut, native.deviceTree=TimedOut, native.display=TimedOut, native.firmware=TimedOut, native.sensors=TimedOut, native.storage=TimedOut, native.tpm=TimedOut, native.usb=TimedOut, native.wlan=TimedOut, network.overview=TimedOut, os.windows=TimedOut, peripherals.audioCameraInput=TimedOut, power.thermal=TimedOut, runtime.environment=TimedOut, scan.configuration=TimedOut, security.overview=TimedOut, software.inventory=TimedOut, stability.events=TimedOut, system.identity=TimedOut, virtualization.environment=TimedOut
+     Рекомендация: Увеличьте --timeout или исключите медленные модули через --exclude.
+     Evidence: collectors
+
+
+ЖУРНАЛ СБОРЩИКОВ
+====================
+ID                                   Статус           мс Причина/ошибка
+------------------------------------------------------------------------------------------------------------------------
+hardware.bus                         TimedOut          0 Сборщик превысил таймаут 00:00:30.
+hardware.memory                      TimedOut          0 Сборщик превысил таймаут 00:00:30.
+hardware.processor                   TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.abi                           TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.battery                       TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.deviceTree                    TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.display                       TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.firmware                      TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.sensors                       TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.storage                       TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.tpm                           TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.usb                           TimedOut          0 Сборщик превысил таймаут 00:00:30.
+native.wlan                          TimedOut          0 Сборщик превысил таймаут 00:00:30.
+network.overview                     TimedOut          0 Сборщик превысил таймаут 00:00:30.
+os.windows                           TimedOut          0 Сборщик превысил таймаут 00:00:30.
+peripherals.audioCameraInput         TimedOut          0 Сборщик превысил таймаут 00:00:30.
+power.thermal                        TimedOut          0 Сборщик превысил таймаут 00:00:30.
+runtime.environment                  TimedOut          0 Сборщик превысил таймаут 00:00:30.
+scan.configuration                   TimedOut          0 Сборщик превысил таймаут 00:00:30.
+security.overview                    TimedOut          0 Сборщик превысил таймаут 00:00:30.
+software.inventory                   TimedOut          0 Сборщик превысил таймаут 00:00:30.
+stability.events                     TimedOut          0 Сборщик превысил таймаут 00:00:30.
+system.identity                      TimedOut          0 Сборщик превысил таймаут 00:00:30.
+virtualization.environment           TimedOut          0 Сборщик превысил таймаут 00:00:30.
+
+ИНВЕНТАРЬ РАЗДЕЛОВ DATA
+=======================
+Раздел                                     Тип          Кратко
+------------------------------------------------------------------------------------------------------------------------
+hardware.bus                               object       1 полей
+hardware.memory                            object       1 полей
+hardware.processor                         object       1 полей
+health.rules                               object       3 полей
+native.abi                                 object       1 полей
+native.battery                             object       1 полей
+native.deviceTree                          object       1 полей
+native.display                             object       1 полей
+native.firmware                            object       1 полей
+native.sensors                             object       1 полей
+native.storage                             object       1 полей
+native.tpm                                 object       1 полей
+native.usb                                 object       1 полей
+native.wlan                                object       1 полей
+network.overview                           object       1 полей
+os.windows                                 object       1 полей
+peripherals.audioCameraInput               object       1 полей
+power.thermal                              object       1 полей
+runtime.environment                        object       1 полей
+scan.configuration                         object       1 полей
+security.overview                          object       1 полей
+software.inventory                         object       1 полей
+stability.events                           object       1 полей
+system.identity                            object       1 полей
+virtualization.environment                 object       1 полей
+
+Формула оценки: bucketScore = max(0, 100 - penalties); overall = hardware*0.45 + security*0.35 + stability*0.20
+SHA-256 JSON-представления без поля hash: будет рассчитан в JSON-отчёте

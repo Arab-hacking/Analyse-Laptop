@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-test-windows:
+    name: Build, test and publish on Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup MSVC developer shell
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Generate sample reports
+        shell: pwsh
+        run: python tools/generate_sample_report.py
+
+      - name: Build and test
+        shell: pwsh
+        run: ./build.ps1 -Configuration Release
+
+      - name: Publish win-x64
+        shell: pwsh
+        run: ./build.ps1 -Configuration Release -Runtime win-x64 -SkipTests -Publish
+
+      - name: CLI selftest
+        shell: pwsh
+        run: artifacts/publish/win-x64/LaptopInspector.exe selftest
+
+      - name: List collectors
+        shell: pwsh
+        run: artifacts/publish/win-x64/LaptopInspector.exe list-collectors
+
+      - name: Upload publish artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LaptopInspector-win-x64
+          path: artifacts/publish/win-x64
+
+      - name: Upload sample reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: sample-reports
+          path: sample_reports
+
+  native-linux-smoke:
+    name: Native C/C++ smoke on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure native
+        run: cmake -S src/native -B artifacts/native -DLI_BUILD_NATIVE_TESTS=ON -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build native
+        run: cmake --build artifacts/native --config Release
+
+      - name: Run native tests
+        run: ctest --test-dir artifacts/native --output-on-failure -C Release
+
+      - name: Generate sample reports
+        run: python3 tools/generate_sample_report.py
+
+      - name: Validate JSON files
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for path in [Path('schema/report.schema.json'), Path('src/LaptopInspector.Core/rules.json'), Path('sample_reports/LaptopInspector_SampleLaptop_20261125_120000.json')]:
+              json.loads(path.read_text(encoding='utf-8'))
+              print('valid json:', path)
+          PY
