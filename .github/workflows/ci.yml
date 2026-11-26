@@ -29,7 +29,29 @@ jobs:
 
       - name: Build and test
         shell: pwsh
-        run: ./build.ps1 -Configuration Release
+        run: |
+          # Вывод сборки сохраняется в файл, а ошибки дублируются в аннотации check-run:
+          # так причину падения видно из API, не выкачивая весь лог job'а.
+          $ErrorActionPreference = 'Continue'
+          $succeeded = $true
+          try {
+            ./build.ps1 -Configuration Release *> build-output.log
+            if ($LASTEXITCODE -ne 0) { $succeeded = $false }
+          }
+          catch {
+            $succeeded = $false
+            $_ | Out-String | Add-Content -Path build-output.log
+          }
+          if (-not $succeeded) {
+            Get-Content build-output.log |
+              Select-String -Pattern 'error [A-Z]+\d+:|error CS\d+|FAIL|Failed!|Exception|\[x\]' -CaseSensitive:$false |
+              Select-Object -First 10 |
+              ForEach-Object {
+                $line = $_.Line.Trim() -replace '%', '%25' -replace "`r", ' ' -replace "`n", ' '
+                Write-Host "::error file=build-output.log::$line"
+              }
+            exit 1
+          }
 
       - name: Publish win-x64
         shell: pwsh
