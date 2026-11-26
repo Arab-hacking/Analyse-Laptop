@@ -27,6 +27,7 @@ if (WIN32)
         cfgmgr32
         dxgi
         wlanapi
+        user32
         ole32
         advapi32
         uuid

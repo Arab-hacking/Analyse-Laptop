@@ -174,7 +174,8 @@ void append_write_cache(li_native::JsonWriter& writer, HANDLE handle)
 
     writer.begin_object();
     writer.key("writeCacheEnabled");
-    writer.boolean(descriptor.WriteCacheEnabled == WriteCacheEnable);
+    // WRITE_CACHE_ENABLE: Unknown=0, Disabled=1, Enabled=2 (имени WriteCacheEnable нет).
+    writer.boolean(descriptor.WriteCacheEnabled == WriteCacheEnabled);
     writer.raw(",\"writeCacheType\":");
     writer.unsigned_number(descriptor.WriteCacheType);
     writer.raw(",\"writeCacheChangeable\":");

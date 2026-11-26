@@ -17,7 +17,8 @@ namespace {
 void append_tpm_context_probe(li_native::JsonWriter& writer)
 {
     writer.raw("\"tbsContext\":");
-    HMODULE module = LoadLibraryW(L"tbs.dll");
+    // Только System32: иначе DLL можно подменить из рабочего каталога.
+    HMODULE module = LoadLibraryExW(L"tbs.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (module == nullptr) {
         writer.begin_object();
         writer.key("available");
