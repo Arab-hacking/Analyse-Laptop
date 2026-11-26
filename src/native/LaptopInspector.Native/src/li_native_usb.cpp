@@ -8,6 +8,11 @@
 
 #ifdef _WIN32
 #define NOMINMAX
+// INITGUID нужен, чтобы DEFINE_GUID/DEVPROPKEY из usbiodef.h и devpkey.h попали
+// определениями в нашу DLL: иначе MSVC оставляет только объявления и линковка падает
+// с LNK2019 (в mingw эти константы объявлены иначе и проблема не видна).
+#define INITGUID
+#include <initguid.h>
 #include <windows.h>
 #include <cfgmgr32.h>
 #include <devpkey.h>
