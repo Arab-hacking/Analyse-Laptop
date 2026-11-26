@@ -1,4 +1,6 @@
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using LaptopInspector.Core.Models;
 using LaptopInspector.Core.Rules;
@@ -41,7 +43,7 @@ public sealed class ReportFactory
 
         ReportMetadata metadata = CreateMetadata(runResult, data);
 
-        return new InspectionReport
+        InspectionReport report = new()
         {
             SchemaVersion = "1.0.0",
             Metadata = metadata,
@@ -50,6 +52,20 @@ public sealed class ReportFactory
             Findings = health.Findings,
             Data = data
         };
+
+        // Hash считается один раз в фабрике, чтобы его одинаково видели все форматы отчёта
+        // (JSON, HTML, TXT, Markdown), а не только JSON-writer.
+        return report with { Metadata = metadata with { ReportHashSha256 = ComputeReportHash(report) } };
+    }
+
+    public static string ComputeReportHash(InspectionReport report)
+    {
+        InspectionReport unsigned = report with
+        {
+            Metadata = report.Metadata with { ReportHashSha256 = null }
+        };
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(unsigned, ReportSerialization.CreateOptions());
+        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
     }
 
     private static ReportMetadata CreateMetadata(CollectionRunResult runResult, JsonObject data)
@@ -57,15 +73,17 @@ public sealed class ReportFactory
         string? computerName = null;
         if (data.TryGetPropertyValue("runtime.environment", out JsonNode? runtimeNode) &&
             runtimeNode is JsonObject runtimeObject &&
-            runtimeObject.TryGetPropertyValue("computerName", out JsonNode? computerNode))
+            runtimeObject.TryGetPropertyValue("computerName", out JsonNode? computerNode) &&
+            computerNode is JsonValue computerValue &&
+            computerValue.TryGetValue(out string? computerText))
         {
-            computerName = computerNode?.GetValue<string>();
+            computerName = computerText;
         }
 
         return new ReportMetadata
         {
             Generator = "LaptopInspector",
-            GeneratorVersion = "0.5.0-stage5",
+            GeneratorVersion = "0.8.0-stage8",
             CreatedAt = DateTimeOffset.UtcNow,
             DurationMs = (long)runResult.Duration.TotalMilliseconds,
             IsAdministrator = runResult.Context.IsAdministrator,

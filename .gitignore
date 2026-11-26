@@ -11,3 +11,9 @@ coverage/
 *.dmp
 *.etl
 *.nupkg
+
+# Каталог для локальных запусков, отчётов и временных файлов сканирования
+.reports/
+
+# Временный файл disk benchmark
+LaptopInspector_disk_benchmark.tmp

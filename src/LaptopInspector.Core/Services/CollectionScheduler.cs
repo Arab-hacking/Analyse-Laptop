@@ -69,13 +69,29 @@ public sealed class CollectionScheduler
                 }
 
                 using SemaphoreSlim gate = new(Math.Max(1, options.Parallelism));
-                Task<CollectorResult>[] tasks = ready
+                List<Task<CollectorResult>> pending = ready
                     .Select(collector => RunWithGateAsync(collector, context, completed, gate, globalCts.Token))
-                    .ToArray();
+                    .ToList();
 
-                CollectorResult[] levelResults = await Task.WhenAll(tasks).ConfigureAwait(false);
-                foreach (CollectorResult result in levelResults)
+                // Результаты фиксируются по мере завершения задач, а не одним Task.WhenAll:
+                // иначе при срабатывании глобального таймаута уже собранные данные терялись.
+                while (pending.Count > 0)
                 {
+                    Task<CollectorResult> finished = await Task.WhenAny(pending).ConfigureAwait(false);
+                    pending.Remove(finished);
+                    CollectorResult result;
+                    try
+                    {
+                        result = await finished.ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (globalCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+                    {
+                        // Дожидаемся оставшихся задач, чтобы они освободили семафор и завершились
+                        // до выхода из области using, затем отдаём управление обработчику таймаута.
+                        await ObserveCompletionAsync(pending).ConfigureAwait(false);
+                        throw;
+                    }
+
                     completed[result.Id] = result;
                     remaining.Remove(result.Id);
                 }
@@ -83,10 +99,15 @@ public sealed class CollectionScheduler
         }
         catch (OperationCanceledException) when (globalCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning("Глобальный таймаут сбора {Timeout} истёк.", options.GlobalTimeout);
+            TimeSpan elapsed = DateTimeOffset.UtcNow - startedAt;
+            _logger.LogWarning(
+                "Глобальный таймаут сбора {Timeout} истёк за {Elapsed}; незавершённых сборщиков: {Count}.",
+                options.GlobalTimeout,
+                elapsed,
+                remaining.Count);
             foreach (ICollector collector in remaining.Values)
             {
-                completed[collector.Id] = CollectorResult.TimedOut(collector.Id, TimeSpan.Zero, options.GlobalTimeout);
+                completed[collector.Id] = CollectorResult.TimedOut(collector.Id, elapsed, options.GlobalTimeout);
             }
         }
 
@@ -158,6 +179,31 @@ public sealed class CollectionScheduler
         }
 
         return pattern.StartsWith('*') || value.StartsWith(parts.FirstOrDefault() ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void ObserveFaults(Task<CollectorResult> task)
+    {
+        _ = task.ContinueWith(
+            static completed => _ = completed.Exception,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted,
+            TaskScheduler.Default);
+    }
+
+    private static async Task ObserveCompletionAsync(IEnumerable<Task<CollectorResult>> tasks)
+    {
+        foreach (Task<CollectorResult> task in tasks)
+        {
+            try
+            {
+                await task.ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Задачи отменены или упали после глобального таймаута: их результаты не нужны,
+                // важно лишь дождаться завершения, чтобы не освобождать семафор раньше времени.
+            }
+        }
     }
 
     private static void MarkUnresolvableCollectors(
@@ -239,16 +285,20 @@ public sealed class CollectionScheduler
 
         Task delayTask = Task.Delay(timeout, cancellationToken);
         Task completedTask = await Task.WhenAny(collectTask, delayTask).ConfigureAwait(false);
-        cancellationToken.ThrowIfCancellationRequested();
+
+        if (completedTask == delayTask && cancellationToken.IsCancellationRequested)
+        {
+            // Отмена пользователем или глобальный таймаут: останавливаем сборщик, чтобы он
+            // не продолжал работу после выхода из планировщика.
+            collectorCts.Cancel();
+            ObserveFaults(collectTask);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
 
         if (completedTask == delayTask)
         {
             collectorCts.Cancel();
-            _ = collectTask.ContinueWith(
-                static task => _ = task.Exception,
-                CancellationToken.None,
-                TaskContinuationOptions.OnlyOnFaulted,
-                TaskScheduler.Default);
+            ObserveFaults(collectTask);
             stopwatch.Stop();
             _logger.LogWarning("Сборщик {CollectorId} превысил таймаут {Timeout}.", collector.Id, timeout);
             return CollectorResult.TimedOut(collector.Id, stopwatch.Elapsed, timeout);

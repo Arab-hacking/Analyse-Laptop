@@ -175,7 +175,10 @@ public sealed class ReportDiffService
     {
         double delta = newValue - oldValue;
         string css = Math.Abs(delta) < 0.001 ? string.Empty : ((higherIsBetter && delta > 0) || (!higherIsBetter && delta < 0) ? " class=\"ok\"" : " class=\"bad\"");
-        builder.AppendLine($"<tr{css}><td><code>{Escape(label)}</code></td><td>{oldValue:0.###}</td><td>{newValue:0.###}</td><td>{delta:+0.###;-0.###;0}</td></tr>");
+        string oldText = oldValue.ToString("0.###", CultureInfo.InvariantCulture);
+        string newText = newValue.ToString("0.###", CultureInfo.InvariantCulture);
+        string deltaText = delta.ToString("+0.###;-0.###;0", CultureInfo.InvariantCulture);
+        builder.AppendLine($"<tr{css}><td><code>{Escape(label)}</code></td><td>{oldText}</td><td>{newText}</td><td>{deltaText}</td></tr>");
     }
 
     private static Dictionary<string, string> ReadCollectors(JsonNode node)

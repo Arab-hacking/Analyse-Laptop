@@ -12,6 +12,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <winioctl.h>
+#include <ntddstor.h>  // STORAGE_PROTOCOL_SPECIFIC_DATA / STORAGE_PROTOCOL_DATA_DESCRIPTOR
 #ifndef SMART_CMD
 #define SMART_CMD 0xB0
 #endif
@@ -248,13 +249,24 @@ void append_nvme_health(li_native::JsonWriter& writer, HANDLE handle)
         return;
     }
 
-    const auto* output_protocol = reinterpret_cast<const STORAGE_PROTOCOL_SPECIFIC_DATA*>(query->AdditionalParameters);
-    if (output_protocol->ProtocolDataOffset + output_protocol->ProtocolDataLength > buffer.size() || output_protocol->ProtocolDataLength < health_log_size) {
+    // Драйвер возвращает STORAGE_PROTOCOL_DATA_DESCRIPTOR: заголовок Version/Size,
+    // затем STORAGE_PROTOCOL_SPECIFIC_DATA, затем сама страница лога. ProtocolDataOffset
+    // отсчитывается от начала STORAGE_PROTOCOL_SPECIFIC_DATA, а не от начала буфера,
+    // поэтому страницу нельзя брать как buffer.data() + offset (сдвиг на размер заголовка).
+    const auto* descriptor = reinterpret_cast<const STORAGE_PROTOCOL_DATA_DESCRIPTOR*>(buffer.data());
+    const auto* output_protocol = &descriptor->ProtocolSpecificData;
+    const auto* protocol_base = reinterpret_cast<const uint8_t*>(output_protocol);
+    const std::size_t base_offset = static_cast<std::size_t>(protocol_base - buffer.data());
+    const std::size_t data_offset = output_protocol->ProtocolDataOffset;
+    const std::size_t data_length = output_protocol->ProtocolDataLength;
+    const std::size_t capacity = buffer.size() - base_offset;
+    if (data_offset < sizeof(STORAGE_PROTOCOL_SPECIFIC_DATA) || data_offset > capacity ||
+        data_length < health_log_size || (capacity - data_offset) < health_log_size) {
         writer.raw("{\"status\":\"invalidProtocolResponse\"}");
         return;
     }
 
-    const uint8_t* health_log = buffer.data() + output_protocol->ProtocolDataOffset;
+    const uint8_t* health_log = protocol_base + data_offset;
     li_json_output parsed{};
     int32_t parse_status = li_nvme_health_to_json(health_log, health_log_size, &parsed);
     if (parsed.data != nullptr) {

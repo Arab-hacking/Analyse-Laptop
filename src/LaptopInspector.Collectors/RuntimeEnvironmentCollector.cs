@@ -49,7 +49,7 @@ public sealed class RuntimeEnvironmentCollector : ICollector
             ["is64BitProcess"] = Environment.Is64BitProcess,
             ["processorCount"] = Environment.ProcessorCount,
             ["systemDirectory"] = OperatingSystem.IsWindows() ? Environment.SystemDirectory : string.Empty,
-            ["currentDirectory"] = Environment.CurrentDirectory,
+            ["currentDirectory"] = PrivacyMasker.MaskPath(Environment.CurrentDirectory, context.Options.Anonymize),
             ["machineNameMasked"] = context.Options.Anonymize
         };
 

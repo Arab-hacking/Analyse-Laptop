@@ -20,7 +20,10 @@ struct WlanMemoryGuard final {
 
 std::string dot11_ssid_to_string(const DOT11_SSID& ssid)
 {
-    return std::string(reinterpret_cast<const char*>(ssid.ucSSID), reinterpret_cast<const char*>(ssid.ucSSID + ssid.uSSIDLength));
+    // SSID — произвольные байты (часто кодировка точки доступа), поэтому приводим их
+    // к корректному UTF-8: иначе JSON отчёта не разберётся на стороне .NET.
+    const std::size_t length = ssid.uSSIDLength > sizeof(ssid.ucSSID) ? sizeof(ssid.ucSSID) : ssid.uSSIDLength;
+    return li_native::to_valid_utf8(std::string_view(reinterpret_cast<const char*>(ssid.ucSSID), length));
 }
 
 std::string interface_state_name(WLAN_INTERFACE_STATE state)

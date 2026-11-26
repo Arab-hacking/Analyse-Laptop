@@ -147,14 +147,36 @@ public sealed class SyntheticBenchmarkCollector : ICollector
         }
 
         Directory.CreateDirectory(context.Options.OutputDirectory);
-        DriveInfo drive = new(Path.GetPathRoot(Path.GetFullPath(context.Options.OutputDirectory)) ?? context.Options.OutputDirectory);
-        if (drive.AvailableFreeSpace < DiskBenchmarkBytes * 3L)
+        long availableBytes = -1;
+        try
+        {
+            string? root = Path.GetPathRoot(Path.GetFullPath(context.Options.OutputDirectory));
+            if (!string.IsNullOrEmpty(root))
+            {
+                availableBytes = new DriveInfo(root).AvailableFreeSpace;
+            }
+        }
+        catch (ArgumentException)
+        {
+            // UNC/непривязанный к тому путь: DriveInfo недоступен, проверку места пропускаем.
+            availableBytes = -1;
+        }
+        catch (IOException)
+        {
+            availableBytes = -1;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            availableBytes = -1;
+        }
+
+        if (availableBytes >= 0 && availableBytes < DiskBenchmarkBytes * 3L)
         {
             return new JsonObject
             {
                 ["status"] = "skipped",
                 ["reason"] = "Недостаточно свободного места для безопасного временного benchmark-файла.",
-                ["availableBytes"] = drive.AvailableFreeSpace
+                ["availableBytes"] = availableBytes
             };
         }
 

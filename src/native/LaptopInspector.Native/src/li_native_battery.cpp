@@ -112,7 +112,11 @@ void append_battery_information(li_native::JsonWriter& writer, HANDLE handle, UL
     }
 
     writer.raw(",\"wearPercent\":");
-    if (information.DesignedCapacity != 0u && information.DesignedCapacity != BATTERY_UNKNOWN_CAPACITY && information.FullChargedCapacity != BATTERY_UNKNOWN_CAPACITY) {
+    // FullChargedCapacity == 0 означает «нет данных» от драйвера, а не 100% износа.
+    if (information.DesignedCapacity != 0u &&
+        information.DesignedCapacity != BATTERY_UNKNOWN_CAPACITY &&
+        information.FullChargedCapacity != 0u &&
+        information.FullChargedCapacity != BATTERY_UNKNOWN_CAPACITY) {
         double wear = (1.0 - (static_cast<double>(information.FullChargedCapacity) / static_cast<double>(information.DesignedCapacity))) * 100.0;
         writer.double_number(wear < 0.0 ? 0.0 : wear);
     }
@@ -225,6 +229,9 @@ extern "C" LI_EXPORT int32_t li_collect_battery_json(char** output) noexcept
             if (!battery_query_tag(handle, tag)) {
                 writer.raw(",\"status\":\"noBatteryTag\"");
                 writer.end_object();
+                // Элемент уже попал в массив, поэтому счётчик должен учитывать и его,
+                // иначе batteryCount не совпадает с числом записей batteries.
+                ++count;
                 continue;
             }
 

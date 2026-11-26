@@ -1,4 +1,4 @@
-﻿using LaptopInspector.Core.Models;
+using LaptopInspector.Core.Models;
 
 namespace LaptopInspector.Cli.CommandLine;
 
@@ -37,44 +37,44 @@ public sealed class CommandLineParser
             CliCommandKind.Diff => ParseDiff(args, index),
             CliCommandKind.ListCollectors => new ParsedCommand(kind, new ScanOptions(), null, false),
             CliCommandKind.SelfTest => new ParsedCommand(kind, new ScanOptions(), null, false),
-            _ => throw new CommandLineException("РќРµРёР·РІРµСЃС‚РЅР°СЏ РєРѕРјР°РЅРґР°.")
+            _ => throw new CommandLineException("Неизвестная команда.")
         };
     }
 
     public static string GetHelp()
     {
         return """
-LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
+LaptopInspector.exe [команда] [опции]
 
-РљРѕРјР°РЅРґС‹:
-  scan                 РџРѕР»РЅС‹Р№ СЃР±РѕСЂ (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ)
-  quick                Р‘С‹СЃС‚СЂС‹Р№ СЃР±РѕСЂ (С‚Р°Р№РјР°СѓС‚ 30 СЃРµРєСѓРЅРґ)
-  diff <a> <b>         РЎСЂР°РІРЅРµРЅРёРµ РґРІСѓС… JSON-РѕС‚С‡С‘С‚РѕРІ
-  list-collectors      РЎРїРёСЃРѕРє РјРѕРґСѓР»РµР№ Рё РёС… С‚СЂРµР±РѕРІР°РЅРёСЏ
-  selftest             РЎР°РјРѕРїСЂРѕРІРµСЂРєР° РєР°СЂРєР°СЃР°
+Команды:
+  scan                 Полный сбор (по умолчанию)
+  quick                Быстрый сбор (таймаут 30 секунд)
+  diff <a> <b>         Сравнение двух JSON-отчётов
+  list-collectors      Список модулей и их требования
+  selftest             Самопроверка каркаса
 
-РћРїС†РёРё scan/quick:
-  -o, --output <dir>         РљР°С‚Р°Р»РѕРі РґР»СЏ РѕС‚С‡С‘С‚РѕРІ
+Опции scan/quick:
+  -o, --output <dir>         Каталог для отчётов
   -f, --format <list>        html,json,txt,md,csv
-  --include <ids>            РўРѕР»СЊРєРѕ СѓРєР°Р·Р°РЅРЅС‹Рµ СЃР±РѕСЂС‰РёРєРё РёР»Рё РјР°СЃРєРё storage.*
-  --exclude <ids>            РСЃРєР»СЋС‡РёС‚СЊ СЃР±РѕСЂС‰РёРєРё
-  --days <N>                 Р“Р»СѓР±РёРЅР° Р°РЅР°Р»РёР·Р° Р¶СѓСЂРЅР°Р»РѕРІ, РґРЅРµР№
-  --benchmark                Р’РєР»СЋС‡РёС‚СЊ Р±СѓРґСѓС‰РёРµ С‚РµСЃС‚С‹ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё
-  --energy                   Р’РєР»СЋС‡РёС‚СЊ Р±СѓРґСѓС‰РёР№ powercfg /energy
-  --anonymize                РњР°СЃРєРёСЂРѕРІР°С‚СЊ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹
-  --history                  РСЃС‚РѕСЂРёСЏ USB/Wi-Fi РїСЂРѕС„РёР»РµР№ (Р±СѓРґСѓС‰РёР№ СЌС‚Р°Рї)
-  --deep-disk                РђРЅР°Р»РёР· РєСЂСѓРїРЅРµР№С€РёС… РїР°РїРѕРє (Р±СѓРґСѓС‰РёР№ СЌС‚Р°Рї)
-  --online                   Р Р°Р·СЂРµС€РёС‚СЊ СЃРµС‚РµРІС‹Рµ РїСЂРѕРІРµСЂРєРё (РІС‹РєР»СЋС‡РµРЅРѕ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ)
-  --raw                      Р’РєР»СЋС‡РёС‚СЊ raw-РґР°РјРїС‹
-  --lang <ru|en>             РЇР·С‹Рє РѕС‚С‡С‘С‚Р°
-  --timeout <sec>            Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С‚Р°Р№РјР°СѓС‚
-  --parallel <N>             РЎС‚РµРїРµРЅСЊ РїР°СЂР°Р»Р»РµР»РёР·РјР°
-  --no-elevate               РќРµ РїСЂРµРґР»Р°РіР°С‚СЊ РїРѕРІС‹С€РµРЅРёРµ РїСЂР°РІ
-  -v, --verbose              РџРѕРґСЂРѕР±РЅС‹Р№ Р»РѕРі
-  --open                     РћС‚РєСЂС‹С‚СЊ HTML-РѕС‚С‡С‘С‚ РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё
+  --include <ids>            Только указанные сборщики или маски storage.*
+  --exclude <ids>            Исключить сборщики
+  --days <N>                 Глубина анализа журналов, дней
+  --benchmark                Включить синтетические benchmark-тесты CPU/memory
+  --energy                   Запустить powercfg /energy /xml (около 60 секунд)
+  --anonymize                Маскировать идентификаторы
+  --history                  История USB/Wi-Fi профилей (зарезервировано)
+  --deep-disk                Анализ крупнейших папок системного диска
+  --online                   Разрешить сетевые проверки (зарезервировано, по умолчанию выключено)
+  --raw                      Включить raw-дампы (зарезервировано)
+  --lang <ru|en>             Язык отчёта
+  --timeout <sec>            Глобальный таймаут
+  --parallel <N>             Степень параллелизма
+  --no-elevate               Не предлагать повышение прав
+  -v, --verbose              Подробный лог
+  --open                     Открыть HTML-отчёт по завершении
 
-РћРїС†РёРё diff:
-  --out <file>               HTML-С„Р°Р№Р» diff (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ diff.html)
+Опции diff:
+  --out <file>               HTML-файл diff (по умолчанию diff.html)
 """;
     }
 
@@ -164,7 +164,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
                     options = options with { OpenReport = true };
                     break;
                 default:
-                    throw new CommandLineException("РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕРїС†РёСЏ: " + token);
+                    throw new CommandLineException("Неизвестная опция: " + token);
             }
         }
 
@@ -195,7 +195,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
 
             if (token.StartsWith('-'))
             {
-                throw new CommandLineException("РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕРїС†РёСЏ diff: " + token);
+                throw new CommandLineException("Неизвестная опция diff: " + token);
             }
 
             operands.Add(token);
@@ -203,7 +203,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
 
         if (operands.Count != 2)
         {
-            throw new CommandLineException("РљРѕРјР°РЅРґР° diff С‚СЂРµР±СѓРµС‚ РґРІР° JSON-РѕС‚С‡С‘С‚Р°: diff <old.json> <new.json>.");
+            throw new CommandLineException("Команда diff требует два JSON-отчёта: diff <old.json> <new.json>.");
         }
 
         DiffOptions diffOptions = new()
@@ -226,7 +226,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
             "list-collectors" => CliCommandKind.ListCollectors,
             "selftest" => CliCommandKind.SelfTest,
             "help" => CliCommandKind.Help,
-            _ => throw new CommandLineException("РќРµРёР·РІРµСЃС‚РЅР°СЏ РєРѕРјР°РЅРґР°: " + value)
+            _ => throw new CommandLineException("Неизвестная команда: " + value)
         };
     }
 
@@ -252,7 +252,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
         {
             if (inlineValue.Length == 0)
             {
-                throw new CommandLineException("РћРїС†РёСЏ " + optionName + " С‚СЂРµР±СѓРµС‚ РЅРµРїСѓСЃС‚РѕРµ Р·РЅР°С‡РµРЅРёРµ.");
+                throw new CommandLineException("Опция " + optionName + " требует непустое значение.");
             }
 
             return inlineValue;
@@ -260,7 +260,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
 
         if (index >= args.Length)
         {
-            throw new CommandLineException("РћРїС†РёСЏ " + optionName + " С‚СЂРµР±СѓРµС‚ Р·РЅР°С‡РµРЅРёРµ.");
+            throw new CommandLineException("Опция " + optionName + " требует значение.");
         }
 
         return args[index++];
@@ -270,7 +270,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
     {
         if (inlineValue is not null)
         {
-            throw new CommandLineException("Р¤Р»Р°Рі " + optionName + " РЅРµ РїСЂРёРЅРёРјР°РµС‚ Р·РЅР°С‡РµРЅРёРµ.");
+            throw new CommandLineException("Флаг " + optionName + " не принимает значение.");
         }
     }
 
@@ -290,7 +290,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
             "text" => "txt",
             "zip" => "csv",
             "html" or "json" or "txt" or "md" or "csv" => format.ToLowerInvariant(),
-            _ => throw new CommandLineException("РќРµРёР·РІРµСЃС‚РЅС‹Р№ С„РѕСЂРјР°С‚ РѕС‚С‡С‘С‚Р°: " + format)
+            _ => throw new CommandLineException("Неизвестный формат отчёта: " + format)
         };
     }
 
@@ -298,7 +298,7 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
     {
         if (!int.TryParse(value, out int parsed) || parsed < minimum)
         {
-            throw new CommandLineException($"РћРїС†РёСЏ {optionName} РѕР¶РёРґР°РµС‚ С†РµР»РѕРµ С‡РёСЃР»Рѕ РЅРµ РјРµРЅСЊС€Рµ {minimum}.");
+            throw new CommandLineException($"Опция {optionName} ожидает целое число не меньше {minimum}.");
         }
 
         return parsed;
@@ -309,11 +309,9 @@ LaptopInspector.exe [РєРѕРјР°РЅРґР°] [РѕРїС†РёРё]
         string normalized = value.ToLowerInvariant();
         if (normalized is not ("ru" or "en"))
         {
-            throw new CommandLineException("РџРѕРґРґРµСЂР¶РёРІР°РµРјС‹Рµ СЏР·С‹РєРё: ru, en.");
+            throw new CommandLineException("Поддерживаемые языки: ru, en.");
         }
 
         return normalized;
     }
 }
-
-

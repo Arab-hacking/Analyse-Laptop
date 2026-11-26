@@ -154,7 +154,7 @@ void append_sensor_setupapi_probe(li_native::JsonWriter& writer)
         }
     }
 
-    writer.raw("],\"sensorDeviceCount\":");
+    writer.raw("],\"sensorClassAvailable\":true,\"sensorDeviceCount\":");
     writer.unsigned_number(count);
 }
 #endif

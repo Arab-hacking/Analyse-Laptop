@@ -33,19 +33,19 @@ internal static class CollectorJsonUtilities
 
     public static bool HasStatus(JsonNode node, string expectedStatus)
     {
-        if (node is JsonObject obj && obj.TryGetPropertyValue("status", out JsonNode? statusNode))
-        {
-            return string.Equals(statusNode?.GetValue<string>(), expectedStatus, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return false;
+        return string.Equals(ReadString(node, "status"), expectedStatus, StringComparison.OrdinalIgnoreCase);
     }
 
     public static string? ReadString(JsonNode node, string propertyName)
     {
         if (node is JsonObject obj && obj.TryGetPropertyValue(propertyName, out JsonNode? value))
         {
-            return value?.GetValue<string>();
+            // GetValue<string>() бросает InvalidOperationException на не-строковых значениях,
+            // а данные приходят из внешних источников (PowerShell/нативная DLL).
+            if (value is JsonValue jsonValue && jsonValue.TryGetValue(out string? text))
+            {
+                return text;
+            }
         }
 
         return null;

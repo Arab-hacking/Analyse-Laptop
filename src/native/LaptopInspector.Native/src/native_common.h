@@ -41,6 +41,9 @@ int32_t return_error_json(char** output, std::string_view collector, std::string
 std::string unsupported_json(std::string_view collector, std::string_view reason);
 std::string escape_json(std::string_view value);
 std::string bytes_to_hex(const void* data, std::size_t length);
+// Приводит произвольные байты к корректному UTF-8: SSID/имена устройств приходят
+// от драйверов без гарантии кодировки, а Utf8JsonReader в .NET отвергает битый UTF-8.
+std::string to_valid_utf8(std::string_view value);
 
 #ifdef _WIN32
 std::string wide_to_utf8(std::wstring_view value);
