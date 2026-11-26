@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using LaptopInspector.Core.Models;
@@ -18,12 +17,8 @@ public sealed class JsonReportWriter : IReportWriter
         CancellationToken cancellationToken)
     {
         JsonSerializerOptions options = ReportSerialization.CreateOptions();
-        InspectionReport unsignedReport = report with
-        {
-            Metadata = report.Metadata with { ReportHashSha256 = null }
-        };
-        byte[] unsignedBytes = JsonSerializer.SerializeToUtf8Bytes(unsignedReport, options);
-        string sha256 = Convert.ToHexString(SHA256.HashData(unsignedBytes)).ToLowerInvariant();
+        // Фабрика уже посчитала hash; для отчётов, собранных в обход неё, считаем здесь.
+        string sha256 = report.Metadata.ReportHashSha256 ?? ReportFactory.ComputeReportHash(report);
         InspectionReport finalReport = report with
         {
             Metadata = report.Metadata with { ReportHashSha256 = sha256 }

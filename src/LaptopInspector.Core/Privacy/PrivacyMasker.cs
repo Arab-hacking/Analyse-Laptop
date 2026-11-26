@@ -26,4 +26,29 @@ public static class PrivacyMasker
 
         return anonymize ? MaskIdentifier(value, salt, prefix) : value;
     }
+
+    /// <summary>
+    /// Убирает из пути каталог профиля пользователя, чтобы в режиме --anonymize
+    /// пути вида C:\Users\Имя\... не раскрывали имя учётной записи.
+    /// </summary>
+    public static string MaskPath(string? path, bool anonymize)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        if (!anonymize)
+        {
+            return path;
+        }
+
+        string profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (string.IsNullOrEmpty(profile))
+        {
+            return path;
+        }
+
+        return path.Replace(profile, "<userprofile>", StringComparison.OrdinalIgnoreCase);
+    }
 }

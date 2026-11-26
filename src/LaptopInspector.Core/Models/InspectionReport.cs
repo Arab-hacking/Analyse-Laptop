@@ -21,7 +21,7 @@ public sealed record ReportMetadata
 {
     public string Generator { get; init; } = "LaptopInspector";
 
-    public string GeneratorVersion { get; init; } = "0.1.0-stage1";
+    public string GeneratorVersion { get; init; } = "0.8.0-stage8";
 
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 

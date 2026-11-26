@@ -14,6 +14,14 @@
 
 namespace {
 #ifdef _WIN32
+// Интерфейс класса батареи {72631e54-78A4-11d0-BCF7-00AA00B7B32A}. В разных SDK он
+// объявлен под разными именами (GUID_DEVICE_BATTERY в batclass.h, GUID_DEVCLASS_BATTERY
+// в devguid.h), а GUID_DEVINTERFACE_BATTERY отсутствует вовсе, поэтому значение задано
+// явно — так код собирается любым Windows SDK без зависимости от имени константы.
+constexpr GUID k_battery_interface_guid = {
+    0x72631e54u, 0x78a4u, 0x11d0u, { 0xbcu, 0xf7u, 0x00u, 0xaau, 0x00u, 0xb7u, 0xb3u, 0x2au }
+};
+
 struct DeviceInfoSetGuard final {
     HDEVINFO value;
     ~DeviceInfoSetGuard() { SetupDiDestroyDeviceInfoList(value); }
@@ -112,7 +120,11 @@ void append_battery_information(li_native::JsonWriter& writer, HANDLE handle, UL
     }
 
     writer.raw(",\"wearPercent\":");
-    if (information.DesignedCapacity != 0u && information.DesignedCapacity != BATTERY_UNKNOWN_CAPACITY && information.FullChargedCapacity != BATTERY_UNKNOWN_CAPACITY) {
+    // FullChargedCapacity == 0 означает «нет данных» от драйвера, а не 100% износа.
+    if (information.DesignedCapacity != 0u &&
+        information.DesignedCapacity != BATTERY_UNKNOWN_CAPACITY &&
+        information.FullChargedCapacity != 0u &&
+        information.FullChargedCapacity != BATTERY_UNKNOWN_CAPACITY) {
         double wear = (1.0 - (static_cast<double>(information.FullChargedCapacity) / static_cast<double>(information.DesignedCapacity))) * 100.0;
         writer.double_number(wear < 0.0 ? 0.0 : wear);
     }
@@ -185,7 +197,7 @@ extern "C" LI_EXPORT int32_t li_collect_battery_json(char** output) noexcept
     return li_native::return_json_string(output, li_native::unsupported_json("battery", "Battery IOCTL доступен только на Windows."));
 #else
     try {
-        HDEVINFO info = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_BATTERY, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+        HDEVINFO info = SetupDiGetClassDevsW(&k_battery_interface_guid, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
         if (info == INVALID_HANDLE_VALUE) {
             return li_native::return_error_json(output, "battery", li_native::last_win32_error_message());
         }
@@ -198,7 +210,7 @@ extern "C" LI_EXPORT int32_t li_collect_battery_json(char** output) noexcept
         for (DWORD index = 0u;; ++index) {
             SP_DEVICE_INTERFACE_DATA interface_data{};
             interface_data.cbSize = sizeof(interface_data);
-            if (!SetupDiEnumDeviceInterfaces(info, nullptr, &GUID_DEVINTERFACE_BATTERY, index, &interface_data)) {
+            if (!SetupDiEnumDeviceInterfaces(info, nullptr, &k_battery_interface_guid, index, &interface_data)) {
                 if (GetLastError() == ERROR_NO_MORE_ITEMS) {
                     break;
                 }
@@ -225,6 +237,9 @@ extern "C" LI_EXPORT int32_t li_collect_battery_json(char** output) noexcept
             if (!battery_query_tag(handle, tag)) {
                 writer.raw(",\"status\":\"noBatteryTag\"");
                 writer.end_object();
+                // Элемент уже попал в массив, поэтому счётчик должен учитывать и его,
+                // иначе batteryCount не совпадает с числом записей batteries.
+                ++count;
                 continue;
             }
 

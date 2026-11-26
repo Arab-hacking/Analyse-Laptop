@@ -3,6 +3,7 @@
 #include "licore/li_core.h"
 #include "native_common.h"
 
+#include <cstring>
 #include <exception>
 #include <string>
 #include <vector>
@@ -131,8 +132,10 @@ void append_acpi(li_native::JsonWriter& writer)
         return;
     }
 
-    std::vector<DWORD> ids(size / sizeof(DWORD));
-    UINT read = GetSystemFirmwareTable(provider, 0u, ids.data(), size);
+    // Буфер выделяется ровно под size байт: sizeof(DWORD)-вектор мог оказаться меньше
+    // запрошенного размера, если size не кратен 4, и GetSystemFirmwareTable переполнял его.
+    std::vector<uint8_t> raw(size);
+    UINT read = GetSystemFirmwareTable(provider, 0u, raw.data(), size);
     if (read == 0u) {
         writer.begin_object();
         writer.key("status");
@@ -141,6 +144,14 @@ void append_acpi(li_native::JsonWriter& writer)
         li_native::append_win32_error(writer, GetLastError());
         writer.end_object();
         return;
+    }
+
+    std::vector<DWORD> ids;
+    ids.reserve(read / sizeof(DWORD));
+    for (UINT offset = 0u; offset + static_cast<UINT>(sizeof(DWORD)) <= read; offset += static_cast<UINT>(sizeof(DWORD))) {
+        DWORD id = 0u;
+        std::memcpy(&id, raw.data() + offset, sizeof(id));
+        ids.push_back(id);
     }
 
     writer.begin_object();

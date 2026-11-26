@@ -113,11 +113,14 @@ public sealed class HtmlReportWriter : IReportWriter
     private static void AppendScoreCard(StringBuilder builder, string title, int score)
     {
         double circumference = 2 * Math.PI * 45;
+        // SVG-атрибуты всегда форматируются инвариантно: в ru-RU десятичный разделитель —
+        // запятая, из-за чего атрибут stroke-dasharray в отчёте становился невалидным.
+        string dashArray = circumference.ToString("F2", CultureInfo.InvariantCulture);
         string offset = (circumference * (100 - score) / 100).ToString("F2", CultureInfo.InvariantCulture);
         builder.AppendLine($"<article class=\"card score-card score-{ScoreBand(score)}\">");
         builder.AppendLine($"<svg viewBox=\"0 0 120 120\" aria-label=\"{Escape(title)} {score}\">");
         builder.AppendLine("<circle class=\"gauge-bg\" cx=\"60\" cy=\"60\" r=\"45\"></circle>");
-        builder.AppendLine($"<circle class=\"gauge\" cx=\"60\" cy=\"60\" r=\"45\" stroke-dasharray=\"{circumference:F2}\" stroke-dashoffset=\"{offset}\"></circle>");
+        builder.AppendLine($"<circle class=\"gauge\" cx=\"60\" cy=\"60\" r=\"45\" stroke-dasharray=\"{dashArray}\" stroke-dashoffset=\"{offset}\"></circle>");
         builder.AppendLine($"<text x=\"60\" y=\"66\" text-anchor=\"middle\">{score}</text>");
         builder.AppendLine("</svg>");
         builder.AppendLine($"<h3>{Escape(title)}</h3>");

@@ -21,15 +21,25 @@ $artifacts = Join-Path $root 'artifacts'
 $publishDir = Join-Path $artifacts "publish/$Runtime"
 $nativeLibraryPath = $null
 
+# MSVC developer shell (ilammy/msvc-dev-cmd) и похожие окружения экспортируют Platform=x64.
+# MSBuild превращает переменные окружения в глобальные свойства и ищет конфигурацию решения
+# "Debug|x64", которой в LaptopInspector.sln нет (error MSB4126). Убираем унаследованное значение.
+if (-not [string]::IsNullOrEmpty($env:Platform)) {
+    Write-Host "Ignoring inherited Platform=$env:Platform (solution uses 'Any CPU')." -ForegroundColor DarkYellow
+    Remove-Item -Path Env:Platform
+}
+
+# Явный массив аргументов вместо ValueFromRemainingArguments: в advanced-функциях
+# параметры вида -S, --build или /p:X=Y не гарантированно попадают в остаток.
 function Invoke-Checked {
     param(
         [Parameter(Mandatory = $true)]
         [string]$FilePath,
 
-        [Parameter(ValueFromRemainingArguments = $true)]
-        [string[]]$Arguments
+        [string[]]$Arguments = @()
     )
 
+    Write-Verbose ("Running: {0} {1}" -f $FilePath, ($Arguments -join ' '))
     & $FilePath @Arguments
     if ($LASTEXITCODE -ne 0) {
         throw "Command '$FilePath $($Arguments -join ' ')' failed with exit code $LASTEXITCODE."
@@ -45,17 +55,22 @@ function Find-NativeLibrary {
         Select-Object -First 1
 }
 
-Write-Host "== LaptopInspector build =="
+Write-Host '== LaptopInspector build =='
 Write-Host "Root: $root"
 Write-Host "Configuration: $Configuration"
 
 New-Item -ItemType Directory -Force -Path $artifacts | Out-Null
 
-Invoke-Checked dotnet restore $solution
-Invoke-Checked dotnet build $solution --configuration $Configuration --no-restore
+Invoke-Checked -FilePath 'dotnet' -Arguments @('restore', $solution)
+Invoke-Checked -FilePath 'dotnet' -Arguments @('build', $solution, '--configuration', $Configuration, '--no-restore')
 
 if (-not $SkipTests) {
-    Invoke-Checked dotnet test $solution --configuration $Configuration --no-build --logger "trx;LogFileName=LaptopInspector.Tests.trx"
+    Invoke-Checked -FilePath 'dotnet' -Arguments @(
+        'test', $solution,
+        '--configuration', $Configuration,
+        '--no-build',
+        '--logger', 'trx;LogFileName=LaptopInspector.Tests.trx'
+    )
 }
 
 if (-not $SkipNative) {
@@ -67,10 +82,15 @@ if (-not $SkipNative) {
         $nativeSource = Join-Path $root 'src/native'
         $nativeBuild = Join-Path $artifacts 'native'
         $nativeTests = if ($SkipTests) { 'OFF' } else { 'ON' }
-        Invoke-Checked cmake -S $nativeSource -B $nativeBuild -DCMAKE_BUILD_TYPE=$Configuration -DLI_BUILD_NATIVE_TESTS=$nativeTests
-        Invoke-Checked cmake --build $nativeBuild --config $Configuration
+        Invoke-Checked -FilePath 'cmake' -Arguments @(
+            '-S', $nativeSource,
+            '-B', $nativeBuild,
+            "-DCMAKE_BUILD_TYPE=$Configuration",
+            "-DLI_BUILD_NATIVE_TESTS=$nativeTests"
+        )
+        Invoke-Checked -FilePath 'cmake' -Arguments @('--build', $nativeBuild, '--config', $Configuration)
         if (-not $SkipTests) {
-            Invoke-Checked ctest --test-dir $nativeBuild --output-on-failure -C $Configuration
+            Invoke-Checked -FilePath 'ctest' -Arguments @('--test-dir', $nativeBuild, '--output-on-failure', '-C', $Configuration)
         }
 
         $nativeLibrary = Find-NativeLibrary -BuildDirectory $nativeBuild
@@ -89,7 +109,15 @@ if (-not $SkipNative) {
 
 if ($Publish) {
     $cliProject = Join-Path $root 'src/LaptopInspector.Cli/LaptopInspector.Cli.csproj'
-    Invoke-Checked dotnet publish $cliProject --configuration $Configuration --runtime $Runtime --self-contained true --output $publishDir /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+    Invoke-Checked -FilePath 'dotnet' -Arguments @(
+        'publish', $cliProject,
+        '--configuration', $Configuration,
+        '--runtime', $Runtime,
+        '--self-contained', 'true',
+        '--output', $publishDir,
+        '/p:PublishSingleFile=true',
+        '/p:IncludeNativeLibrariesForSelfExtract=true'
+    )
     if ($null -ne $nativeLibraryPath) {
         Copy-Item -Path $nativeLibraryPath -Destination $publishDir -Force
     }

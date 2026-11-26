@@ -76,7 +76,7 @@ $disk = Get-CimInstance Win32_PerfFormattedData_PerfDisk_PhysicalDisk -ErrorActi
 [ordered]@{
   source = 'PDH counters through PowerShell + Win32_PerfFormattedData_*'
   benchmarkEnabled = $false
-  note = 'Этап 4 выполняет только read-only snapshot. Записывающие дисковые бенчмарки появятся на Этапе 7 и потребуют явного подтверждения.'
+  note = 'Сборщик выполняет только read-only snapshot. Записывающие тесты запускаются отдельными коллекторами при --benchmark и --deep-disk.'
   counterSamples = $counterSamples
   processor = $cpu
   memory = $memory
@@ -119,9 +119,9 @@ public sealed class CollectionCoverageCollector : ICollector
         Add(sections, "4.13", "Диспетчер устройств", "native.deviceTree", "Скрытые/отключённые устройства собираются только при будущей опции history/deep.");
         Add(sections, "4.14", "Операционная система", "os.windows", "SFC/DISM CBS deep parsing отложен.");
         Add(sections, "4.15", "Программное обеспечение", "software.inventory", "Пароли, cookies и история браузеров не собираются.");
-        Add(sections, "4.16", "Безопасность", "security.overview,native.tpm", "Security score будет рассчитан Health Rules Engine на Этапе 5.");
+        Add(sections, "4.16", "Безопасность", "security.overview,native.tpm", "Security score рассчитывает Health Rules Engine по правилам из rules.json.");
         Add(sections, "4.17", "Журналы событий и стабильность", "stability.events", "Глубина задаётся --days.");
-        Add(sections, "4.18", "Производительность", "performance.snapshot", "Полные бенчмарки будут на Этапе 7.");
+        Add(sections, "4.18", "Производительность", "performance.snapshot", "Полные бенчмарки выполняются отдельными коллекторами при --benchmark.");
         Add(sections, "4.19", "Виртуализация и окружение разработки", "virtualization.environment", "Информативный read-only сбор.");
 
         System.Text.Json.Nodes.JsonObject data = new()

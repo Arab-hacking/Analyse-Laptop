@@ -27,7 +27,7 @@ JSON остаётся канонической машинной моделью. 
 - `findings`;
 - `data.health.rules`.
 
-`JsonReportWriter` добавляет `reportHashSha256`, рассчитанный по JSON без самого hash-поля.
+`ReportFactory` рассчитывает `reportHashSha256` один раз — по JSON-представлению отчёта без самого hash-поля, поэтому одинаковый hash попадает и в JSON, и в HTML/TXT/Markdown. Проверка целостности: обнулить `metadata.reportHashSha256`, сериализовать отчёт с параметрами `ReportSerialization.CreateOptions()` и сравнить SHA-256 с сохранённым значением.
 
 ## TXT
 

@@ -16,6 +16,14 @@ struct ModuleGuard final {
     ~ModuleGuard() { if (value != nullptr) { FreeLibrary(value); } }
 };
 
+// Vendor DLL загружаются только из System32 и каталога приложения: обычный LoadLibraryW
+// искал бы их и в рабочем каталоге, что позволяет подменить библиотеку (DLL hijacking).
+HMODULE load_vendor_library(const wchar_t* name)
+{
+    constexpr DWORD flags = LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR;
+    return LoadLibraryExW(name, nullptr, flags);
+}
+
 using NvmlDevice = void*;
 using NvmlReturn = int;
 
@@ -36,7 +44,7 @@ using NvmlDeviceGetPowerManagementLimit = NvmlReturn(__cdecl*)(NvmlDevice, unsig
 
 void append_dll_probe(li_native::JsonWriter& writer, const wchar_t* dll_name)
 {
-    HMODULE module = LoadLibraryW(dll_name);
+    HMODULE module = load_vendor_library(dll_name);
     writer.begin_object();
     writer.key("dll");
     writer.string(li_native::wide_to_utf8(dll_name));
@@ -56,7 +64,7 @@ void append_dll_probe(li_native::JsonWriter& writer, const wchar_t* dll_name)
 void append_nvml(li_native::JsonWriter& writer)
 {
     writer.raw("\"nvml\":");
-    HMODULE module = LoadLibraryW(L"nvml.dll");
+    HMODULE module = load_vendor_library(L"nvml.dll");
     if (module == nullptr) {
         writer.begin_object();
         writer.key("available");

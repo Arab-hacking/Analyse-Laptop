@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using LaptopInspector.Core.Abstractions;
 using LaptopInspector.Core.Models;
+using LaptopInspector.Core.Privacy;
 using LaptopInspector.Core.Services;
 
 namespace LaptopInspector.Collectors;
@@ -28,7 +29,7 @@ public sealed class ScanConfigurationCollector : ICollector
         {
             ["runId"] = context.RunId,
             ["startedAt"] = context.StartedAt.ToString("O"),
-            ["outputDirectory"] = options.OutputDirectory,
+            ["outputDirectory"] = PrivacyMasker.MaskPath(options.OutputDirectory, options.Anonymize),
             ["formats"] = ToJsonArray(options.Formats),
             ["include"] = ToJsonArray(options.Include),
             ["exclude"] = ToJsonArray(options.Exclude),

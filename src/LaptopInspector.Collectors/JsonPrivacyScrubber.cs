@@ -96,13 +96,13 @@ internal static class JsonPrivacyScrubber
     private static JsonNode MaskValue(JsonValue value, string salt, string propertyName)
     {
         string raw;
-        try
+        if (value.TryGetValue(out string? text))
         {
-            raw = value.GetValue<string>() ?? string.Empty;
+            raw = text ?? string.Empty;
         }
-        catch (InvalidOperationException)
+        else
         {
-            raw = value.ToJsonString();
+            raw = value.ToJsonString().Trim('"');
         }
 
         if (string.IsNullOrWhiteSpace(raw))

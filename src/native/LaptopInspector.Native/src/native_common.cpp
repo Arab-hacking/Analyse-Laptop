@@ -136,6 +136,13 @@ void JsonWriter::double_number(double value)
 {
     char buffer[64];
     std::snprintf(buffer, sizeof(buffer), "%.3f", value);
+    // printf уважает LC_NUMERIC: в локалях с запятой JSON стал бы невалидным.
+    for (char* character = buffer; *character != '\0'; ++character) {
+        if (*character == ',') {
+            *character = '.';
+        }
+    }
+
     text_ += buffer;
 }
 
@@ -224,6 +231,66 @@ std::string escape_json(std::string_view value)
     std::string result;
     result.reserve(value.size() + 2u);
     append_escaped_into(result, value);
+    return result;
+}
+
+std::string to_valid_utf8(std::string_view value)
+{
+    std::string result;
+    result.reserve(value.size());
+
+    const std::size_t size = value.size();
+    std::size_t index = 0u;
+    while (index < size) {
+        const unsigned char lead = static_cast<unsigned char>(value[index]);
+        if (lead < 0x80u) {
+            result.push_back(static_cast<char>(lead));
+            ++index;
+            continue;
+        }
+
+        std::size_t extra = 0u;
+        if (lead >= 0xC2u && lead <= 0xDFu) {
+            extra = 1u;
+        }
+        else if (lead >= 0xE0u && lead <= 0xEFu) {
+            extra = 2u;
+        }
+        else if (lead >= 0xF0u && lead <= 0xF4u) {
+            extra = 3u;
+        }
+        else {
+            result.push_back('?');
+            ++index;
+            continue;
+        }
+
+        bool valid = (index + extra) < size;
+        for (std::size_t offset = 1u; valid && offset <= extra; ++offset) {
+            if ((static_cast<unsigned char>(value[index + offset]) & 0xC0u) != 0x80u) {
+                valid = false;
+            }
+        }
+
+        if (valid) {
+            const unsigned char second = static_cast<unsigned char>(value[index + 1u]);
+            if ((lead == 0xE0u && second < 0xA0u) || (lead == 0xEDu && second >= 0xA0u) ||
+                (lead == 0xF0u && second < 0x90u) || (lead == 0xF4u && second >= 0x90u)) {
+                // overlong-форма или суррогат: для JSON это невалидный UTF-8
+                valid = false;
+            }
+        }
+
+        if (!valid) {
+            result.push_back('?');
+            ++index;
+            continue;
+        }
+
+        result.append(value.data() + index, extra + 1u);
+        index += extra + 1u;
+    }
+
     return result;
 }
 
